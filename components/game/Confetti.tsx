@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { colors } from '@/constants/theme';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -77,6 +78,8 @@ export interface ConfettiProps {
 }
 
 export function Confetti({ count = 32 }: ConfettiProps) {
+  const reduceMotion = useReduceMotion();
+  if (reduceMotion) return null;
   const centerX = SCREEN_WIDTH / 2 - 4;
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">

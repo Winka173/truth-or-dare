@@ -9,6 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { CATEGORY_BY_ID } from '@/constants/categories';
 import { animation, colors, fonts, fontSize, radius, shadow, spacing } from '@/constants/theme';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { getTranslatedText } from '@/utils/questionFilter';
 import type { LanguageCode, Question } from '@/types/question';
 
@@ -30,11 +31,12 @@ export function QuestionCard({
   const [isFlipped, setIsFlipped] = useState(false);
   const rotation = useSharedValue(0);
   const cat = CATEGORY_BY_ID[question.category_id];
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
     setIsFlipped(false);
-    rotation.value = withSpring(0, animation.cardFlip);
-  }, [question.id, rotation]);
+    rotation.value = reduceMotion ? 0 : withSpring(0, animation.cardFlip);
+  }, [question.id, rotation, reduceMotion]);
 
   const frontStyle = useAnimatedStyle(() => ({
     transform: [{ perspective: 1200 }, { rotateY: `${rotation.value}deg` }],
@@ -48,7 +50,7 @@ export function QuestionCard({
 
   const handlePress = () => {
     if (isFlipped) return;
-    rotation.value = withSpring(180, animation.cardFlip);
+    rotation.value = reduceMotion ? 180 : withSpring(180, animation.cardFlip);
     setIsFlipped(true);
     if (hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {

@@ -78,8 +78,10 @@ export const colors = {
   text: {
     primary: '#E5E3FF',
     secondary: '#AAA8C3',
-    muted: '#74738C',
-    placeholder: '#46465D',
+    // Bumped from #74738C (4.2:1, failed AA normal text) to 5.4:1 on bg.screen
+    muted: '#8584A0',
+    // Bumped from #46465D (2.1:1, failed AA) to 3.8:1 on bg.screen
+    placeholder: '#6C6C80',
     inverse: '#48001B',
     onBackground: '#E5E3FF',
     onSurface: '#E5E3FF',
