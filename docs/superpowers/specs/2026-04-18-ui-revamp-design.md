@@ -61,6 +61,19 @@ Remove from `package.json`: `@expo-google-fonts/playfair-display`, `@expo-google
 - Press animation: scale to `0.93`, spring `{ damping: 12, stiffness: 180 }` — bouncier than old design
 - All `react-native` `Animated` usage replaced with Reanimated `useSharedValue` / `useAnimatedStyle`
 
+### Animation Libraries
+
+Two libraries added on top of the existing Reanimated + Gesture Handler stack:
+
+**`lottie-react-native`** — JSON-based vector animations exported from After Effects. Used for: splash logo reveal, onboarding illustrations, confetti burst on results, streak fire badge, loading states. Lottie files are bundled in `assets/lottie/`. Source files from [LottieFiles](https://lottiefiles.com) (free tier, MIT-compatible).
+
+**`moti`** — Declarative wrapper on Reanimated. Replaces boilerplate `useSharedValue` + `useAnimatedStyle` for simple entrance/exit animations. Used for: stagger lists, number count-ups, bounce entrances. API: `<MotiView from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }}>`.
+
+**Division of responsibility:**
+- Lottie → complex pre-built character/particle animations
+- Moti → declarative entrance/exit/stagger across all screens
+- Reanimated directly → physics-driven interactions (spring press, gesture-driven, continuous loops)
+
 ---
 
 ## 3. Screen Map
@@ -393,7 +406,99 @@ After any native dependency change: `npx expo run:ios` or `eas build --profile d
 
 ---
 
-## 13. What Does NOT Change
+## 13. Animation Catalogue
+
+Comprehensive list of every animation in the app, organized by screen.
+
+### Splash
+- **Logo entrance:** Lottie file `splash-logo.json` plays once on mount — animated drawing of the app wordmark, ~1.5s, then holds on last frame
+- **Background pulse:** Reanimated loop — gradient overlay opacity breathes from `0.6` → `1.0` → `0.6` on a 2s cycle while Lottie plays
+- **Exit transition:** Whole screen fades to black (`opacity` 1 → 0, 300ms) before pushing to Onboarding or Home
+
+### Onboarding
+- **Slide illustrations:** Each slide has a Lottie animation (`onboarding-1.json`, `onboarding-2.json`, `onboarding-3.json`) that plays on loop while the slide is visible, pauses when swiped away
+- **Slide transition:** Horizontal swipe with spring resistance (`GestureDetector` + Reanimated `translateX`)
+- **Dot indicators:** Active dot expands from `8px` → `24px` width with spring, inactive dots contract — Reanimated `withSpring`
+- **CTA button entrance:** Moti `from={{ opacity: 0, scale: 0.8 }}` → `animate={{ opacity: 1, scale: 1 }}` with `delay(400)`
+
+### Home
+- **Ambient floating emojis:** 6–8 emoji characters (🎉🔥😈💀🎲✨) drift upward from bottom of screen on looping Reanimated paths — each has randomized speed (8–14s), horizontal drift, and fade in/out at top/bottom edges. Runs continuously in the background.
+- **Title entrance:** Moti `from={{ opacity: 0, translateY: -30 }}` → `animate={{ opacity: 1, translateY: 0 }}`, spring, on mount
+- **Button entrance:** Moti `from={{ opacity: 0, scale: 0.9 }}` → `animate={{ opacity: 1, scale: 1 }}`, `delay(200)`
+- **Button glow pulse:** Reanimated loop — `shadowOpacity` pulses from `0.4` → `0.8` → `0.4` on a 2s cycle, giving the "Play Now" CTA a breathing glow
+
+### Setup (all 3 steps)
+- **Step entrance:** Each step screen slides in from right (Expo Router transition), then content items stagger in with Moti `delay(index * 60)`
+- **Progress dots:** Active dot expands + color fills with `withSpring` — same as onboarding dots
+- **Player chip add:** New chip enters with Moti `from={{ opacity: 0, scale: 0.5 }}` → `animate={{ opacity: 1, scale: 1 }}`, spring bounce
+- **Player chip remove:** Moti `exit={{ opacity: 0, scale: 0.5 }}`, spring — chip shrinks out before list re-orders
+- **Age group card select:** Selected card scales to `1.03` + border glows (Reanimated `withSpring`); unselected cards dim to `opacity: 0.6`
+- **Auto-advance (Age step):** After 400ms delay, `withTiming` pushes to next screen — a subtle "loading ring" sweeps around the selected card during the delay using Reanimated `strokeDashoffset`
+- **Mood button select:** Selected pill springs to `scale: 1.08` + color fills; others dim — Reanimated `withSpring`
+- **Category chip entrance:** Grid chips stagger in with Moti `delay(index * 30)` on screen mount
+- **Locked chip shake:** Tapping a locked category chip triggers a `withSequence` horizontal shake (−4px → +4px × 3) via Reanimated
+
+### Handoff
+- **Background entrance:** Gradient fades in from black (300ms `withTiming`) — gives a "new scene" feel
+- **Player name entrance:** Moti `from={{ opacity: 0, scale: 1.4 }}` → `animate={{ opacity: 1, scale: 1 }}`, spring — name "lands" on screen with weight
+- **Drumroll Lottie:** `drumroll.json` plays behind the name while waiting — subtle animated rings emanating from center
+- **"I'm Ready" button entrance:** Moti `from={{ opacity: 0, translateY: 40 }}` → `animate={{ opacity: 1, translateY: 0 }}`, `delay(300)`
+- **Exit on tap:** Button press → scale to `0.93` (spring) → whole screen flashes white (opacity 0 → 0.6 → 0, 200ms) → navigates to Play
+
+### Play
+- **Question card entrance:** Moti `from={{ opacity: 0, translateY: 60, scale: 0.9 }}` → `animate={{ opacity: 1, translateY: 0, scale: 1 }}`, spring — card flies up from below
+- **Card shimmer:** Reanimated loop — a `LinearGradient` highlight sweeps left → right across the card every 3s (`translateX` from `-100%` to `+100%`, 800ms `withTiming`), giving a glass sheen effect
+- **TRUTH label:** Reanimated `withSpring` scale-in from `0` → `1` on card entrance, teal color
+- **DARE label:** Same as TRUTH but with spring `overshoot` — bounces slightly past `1.0` before settling, red/orange color — feels punchier than TRUTH
+- **Streak badge entrance:** Lottie `fire.json` plays when streak ≥ 3 — animated flame badge appears above the card with Moti `from={{ opacity: 0, scale: 0 }}` spring
+- **Streak badge exit:** Moti `exit={{ opacity: 0, scale: 0 }}` when streak resets
+- **Done button press:** Scale `0.93` spring → card exits with Moti `exit={{ opacity: 0, translateY: -80 }}` (flies upward) → next card enters from below
+- **Skip button press:** Card exits with Moti `exit={{ opacity: 0, translateX: 100, rotate: '15deg' }}` (flies off to the right, rotated) — dismissive feel
+- **Player name chip change:** When player rotates, chip text crossfades (old name fades out, new name fades in, `withTiming` 200ms)
+- **Progress bar:** Reanimated `withTiming` fills left → right as questions progress, `duration: 400`
+- **Speaker icon mute:** Icon swaps with a crossfade + red strikethrough line draws across it (Reanimated `scaleX` 0 → 1)
+
+### Results
+- **Confetti:** Lottie `confetti.json` plays once on mount — rich multi-color confetti burst, ~2s, no loop. Replaces hand-rolled particle system.
+- **Winner card entrance:** Moti `from={{ opacity: 0, scale: 0.7 }}` → `animate={{ opacity: 1, scale: 1 }}`, spring with `damping: 8` (bouncy) — winner card lands with more energy than others
+- **Score count-up:** Moti `animate={{ value: finalScore }}` with custom text interpolation — scores count up from 0 over 800ms on mount, `easing: Easing.out(Easing.cubic)`
+- **Player card stagger:** Cards enter with Moti `delay(index * 100)` from below — winner first, then 2nd, 3rd, etc.
+- **Gold/silver/bronze shimmer:** Top 3 cards get the same `LinearGradient` shimmer sweep as the Play card, but on a metallic tint
+- **Share button:** Moti `from={{ opacity: 0, translateY: 20 }}` → `animate={{ opacity: 1, translateY: 0 }}`, `delay(600)` — appears after cards have settled
+- **"Play Again" button pulse:** Same breathing glow as the Home "Play Now" button — invites immediate re-engagement
+
+### Settings (modal)
+- **Sheet entrance:** `slide_from_bottom` (Expo Router) + Reanimated spring on the inner content scrolling up
+- **Toggle switch:** Reanimated `withSpring` thumb translation — custom animated toggle (not native switch) to match design system
+- **Row press:** Moti `animate={{ backgroundColor }}` crossfade on press (brief highlight)
+
+### Favorites
+- **List entrance:** Moti stagger `delay(index * 50)` on each question row
+- **Remove star:** Star icon does a quick Reanimated `withSequence` scale (1 → 1.4 → 0) as it disappears, row slides out with `withTiming`
+- **Empty state:** Lottie `empty-state.json` plays on loop when no favorites — gentle floating star animation
+
+---
+
+### Animation Install
+
+```bash
+npx expo install lottie-react-native
+npm install moti
+```
+
+`moti` has no native code — no rebuild required. `lottie-react-native` has native code — rebuild with `npx expo run:ios` after install.
+
+**Lottie files to source from LottieFiles (free/MIT):**
+- `assets/lottie/splash-logo.json`
+- `assets/lottie/onboarding-1.json` / `onboarding-2.json` / `onboarding-3.json`
+- `assets/lottie/confetti.json`
+- `assets/lottie/fire.json` (streak badge)
+- `assets/lottie/drumroll.json` (handoff screen)
+- `assets/lottie/empty-state.json` (favorites empty)
+
+---
+
+## 14. What Does NOT Change
 
 - `store/slices/gameSlice.ts` — scoring logic, turn cycle, undo, history (new `customQuestions` field added)
 - `store/slices/packsSlice.ts` — pack unlock logic unchanged
