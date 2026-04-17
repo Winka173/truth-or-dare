@@ -7,6 +7,7 @@ import {
   resetGame,
   skipQuestion,
   startGame,
+  undoLastTurn,
 } from '@/store/slices/gameSlice';
 import { buildQuestionPool } from '@/utils/questionFilter';
 import { prepareEscalatingPool, preparePool, pushRecentId } from '@/utils/shuffle';
@@ -76,6 +77,7 @@ export function useGame() {
   const next = useCallback(() => dispatch(nextQuestion()), [dispatch]);
   const end = useCallback(() => dispatch(endGame()), [dispatch]);
   const reset = useCallback(() => dispatch(resetGame()), [dispatch]);
+  const undo = useCallback(() => dispatch(undoLastTurn()), [dispatch]);
 
   return {
     session,
@@ -87,6 +89,7 @@ export function useGame() {
     next,
     complete,
     skip,
+    undo,
     end,
     reset,
   };

@@ -29,6 +29,11 @@ export interface GameConfig {
 export interface QuestionHistory {
   questionId: string;
   playerId: string;
+  type: QuestionType;
+  /** Score delta applied for this turn (positive for done, negative for skip). Includes streak bonus. */
+  scoreDelta: number;
+  /** Streak value the player had BEFORE this turn (for undo restoration). */
+  priorStreak: number;
   completed: boolean;
   skipped: boolean;
   timestampMs: number;

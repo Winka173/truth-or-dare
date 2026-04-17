@@ -11,7 +11,7 @@ import {
 import { router } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Check, RotateCcw, X } from 'lucide-react-native';
+import { Check, RotateCcw, Undo2, X } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -26,7 +26,8 @@ import { applyChainPrompt, getTranslatedText } from '@/utils/questionFilter';
 import { colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
 
 export default function PlayScreen() {
-  const { session, currentQuestion, currentPlayer, complete, skip, next, end } = useGame();
+  const { session, currentQuestion, currentPlayer, history, complete, skip, next, end, undo } =
+    useGame();
   const { settings } = useSettings();
   const allQuestions = useAppSelector((s) => s.game.allQuestions);
   const [flipped, setFlipped] = useState(false);
@@ -167,6 +168,13 @@ export default function PlayScreen() {
     router.replace('/results');
   };
 
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    undo();
+    setFlipped(true);
+    setPendingChain(null);
+  };
+
   const progress = (session.currentQuestionIndex + 1) / totalQuestions;
 
   return (
@@ -192,6 +200,19 @@ export default function PlayScreen() {
       <View style={styles.progressWrap}>
         <View style={[styles.progressBar, { width: `${Math.round(progress * 100)}%` }]} />
       </View>
+
+      {!flipped && history.length > 0 ? (
+        <Pressable
+          onPress={handleUndo}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Undo last answer"
+          style={styles.undoButton}
+        >
+          <Undo2 size={14} color={colors.text.secondary} />
+          <Text style={styles.undoText}>Undo last answer</Text>
+        </Pressable>
+      ) : null}
 
       {!flipped && pendingChain ? (
         <Animated.View
@@ -370,6 +391,23 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemi,
     fontSize: fontSize.sm,
     color: colors.primary.onPrimary,
+  },
+  undoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    backgroundColor: colors.bg.containerHigh,
+  },
+  undoText: {
+    fontFamily: fonts.bodyMed,
+    fontSize: fontSize.xs,
+    color: colors.text.secondary,
+    letterSpacing: 0.3,
   },
   bonusWrap: {
     alignSelf: 'stretch',
