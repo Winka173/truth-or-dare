@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { colors, animation } from '@/constants/theme';
+import { animation, colors } from '@/constants/theme';
 
 export default function MainLayout() {
   return (
@@ -12,6 +12,13 @@ export default function MainLayout() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="setup" />
+      <Stack.Screen name="play" options={{ gestureEnabled: false }} />
+      <Stack.Screen
+        name="results"
+        options={{ animation: 'fade', animationDuration: animation.transition.fade }}
+      />
+      <Stack.Screen name="categories" />
       <Stack.Screen
         name="settings"
         options={{

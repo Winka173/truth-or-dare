@@ -1,34 +1,122 @@
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, fontSize, spacing } from '@/constants/theme';
+import { Pressable, SafeAreaView, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Settings as SettingsIcon } from 'lucide-react-native';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { useGame } from '@/hooks/useGame';
+import { useAppSelector } from '@/store/hooks';
+import { storageApi } from '@/utils/storage';
+import { animation, colors, fonts, fontSize, spacing } from '@/constants/theme';
+import type { Player } from '@/types/game';
 
 export default function HomeScreen() {
+  const allQuestions = useAppSelector((s) => s.game.allQuestions);
+  const { start } = useGame();
+
+  const handleQuickStart = () => {
+    const lastConfig = storageApi.loadLastConfig();
+    const lastPlayers = storageApi.loadLastPlayers();
+    if (!lastConfig) {
+      router.push('/setup');
+      return;
+    }
+    const names = lastPlayers.length > 0 ? lastPlayers : ['Player 1'];
+    const players: Player[] = names.map((name, i) => ({
+      id: `p_${i}`,
+      name,
+      score: 0,
+      truthsCompleted: 0,
+      daresCompleted: 0,
+      skips: 0,
+      streak: 0,
+    }));
+    start(lastConfig, players);
+    router.push('/play');
+  };
+
+  const hasQuickStart = storageApi.loadLastConfig() !== null && allQuestions.length > 0;
+
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.wordmark}>Truth or Dare</Text>
-        <Text style={styles.tagline}>
-          Phase 1 foundation — real UI arrives in Phase 4.
-        </Text>
+      <ScreenHeader
+        right={
+          <Pressable
+            onPress={() => router.push('/settings')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+            style={styles.iconButton}
+          >
+            <SettingsIcon size={22} color={colors.text.primary} />
+          </Pressable>
+        }
+      />
+      <View style={styles.content}>
+        <Animated.Text
+          entering={FadeInDown.duration(animation.entry.header)}
+          style={styles.wordmark}
+        >
+          Truth or Dare
+        </Animated.Text>
+        <Animated.Text entering={FadeInDown.delay(100)} style={styles.tagline}>
+          No wifi. No accounts. Just the good stuff.
+        </Animated.Text>
+        <View style={styles.actions}>
+          {hasQuickStart ? (
+            <Animated.View entering={FadeInDown.delay(200)}>
+              <Button
+                label="Quick Start"
+                variant="primary"
+                fullWidth
+                onPress={handleQuickStart}
+                accessibilityLabel="Quick start with last settings"
+              />
+            </Animated.View>
+          ) : null}
+          <Animated.View entering={FadeInDown.delay(260)}>
+            <Button
+              label="New Game"
+              variant={hasQuickStart ? 'secondary' : 'primary'}
+              fullWidth
+              onPress={() => router.push('/setup')}
+              accessibilityLabel="Configure a new game"
+            />
+          </Animated.View>
+          <Animated.View entering={FadeInDown.delay(320)}>
+            <Button
+              label="Browse Categories"
+              variant="secondary"
+              fullWidth
+              onPress={() => router.push('/categories')}
+              accessibilityLabel="Browse all categories"
+            />
+          </Animated.View>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg.screen,
-  },
-  container: {
-    flex: 1,
+  safe: { flex: 1, backgroundColor: colors.bg.screen },
+  iconButton: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
     paddingHorizontal: spacing.xl,
-    gap: spacing.md,
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing['3xl'],
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   wordmark: {
     fontFamily: fonts.heading,
-    fontSize: fontSize['3xl'],
+    fontSize: fontSize['4xl'],
     color: colors.text.primary,
     textAlign: 'center',
   },
@@ -37,6 +125,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     color: colors.text.secondary,
     textAlign: 'center',
-    maxWidth: 320,
+    marginBottom: spacing.xl,
+  },
+  actions: {
+    gap: spacing.sm,
+    marginTop: spacing.xl,
   },
 });
