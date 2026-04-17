@@ -1,9 +1,11 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
+import { I18nManager } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { Provider } from 'react-redux';
+import { isRTL } from '@/locales';
 import {
   PlayfairDisplay_700Bold,
   PlayfairDisplay_700Bold_Italic,
@@ -43,6 +45,17 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
     const savedPacks = storageApi.loadUnlockedPacks();
     if (savedPacks.length > 0) store.dispatch(hydratePacks(savedPacks));
+
+    // Sync RTL with the persisted locale. Note: I18nManager.forceRTL takes
+    // effect on the NEXT app launch on native platforms — so a user
+    // switching to/from Arabic must restart once. This boot-time check
+    // makes sure the layout matches on every subsequent launch.
+    const lang = store.getState().settings.language;
+    const wantsRTL = isRTL(lang);
+    if (wantsRTL !== I18nManager.isRTL) {
+      I18nManager.allowRTL(wantsRTL);
+      I18nManager.forceRTL(wantsRTL);
+    }
   } catch (err) {
     if (__DEV__) console.error('Boot failure:', err);
   }

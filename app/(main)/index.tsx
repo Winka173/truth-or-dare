@@ -5,6 +5,7 @@ import { Settings as SettingsIcon } from 'lucide-react-native';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { useGame } from '@/hooks/useGame';
+import { useT } from '@/hooks/useT';
 import { useAppSelector } from '@/store/hooks';
 import { storageApi } from '@/utils/storage';
 import { animation, colors, fonts, fontSize, spacing } from '@/constants/theme';
@@ -13,6 +14,7 @@ import type { Player } from '@/types/game';
 export default function HomeScreen() {
   const allQuestions = useAppSelector((s) => s.game.allQuestions);
   const { start } = useGame();
+  const t = useT();
 
   const handleQuickStart = () => {
     const lastConfig = storageApi.loadLastConfig();
@@ -45,7 +47,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/settings')}
             hitSlop={12}
             accessibilityRole="button"
-            accessibilityLabel="Open settings"
+            accessibilityLabel={t('home.openSettings')}
             style={styles.iconButton}
           >
             <SettingsIcon size={22} color={colors.text.primary} />
@@ -57,39 +59,39 @@ export default function HomeScreen() {
           entering={FadeInDown.duration(animation.entry.header)}
           style={styles.wordmark}
         >
-          Truth or Dare
+          {t('app.title')}
         </Animated.Text>
         <Animated.Text entering={FadeInDown.delay(100)} style={styles.tagline}>
-          No wifi. No accounts. Just the good stuff.
+          {t('app.tagline')}
         </Animated.Text>
         <View style={styles.actions}>
           {hasQuickStart ? (
             <Animated.View entering={FadeInDown.delay(200)}>
               <Button
-                label="Quick Start"
+                label={t('home.quickStart')}
                 variant="primary"
                 fullWidth
                 onPress={handleQuickStart}
-                accessibilityLabel="Quick start with last settings"
+                accessibilityLabel={t('home.quickStartA11y')}
               />
             </Animated.View>
           ) : null}
           <Animated.View entering={FadeInDown.delay(260)}>
             <Button
-              label="New Game"
+              label={t('home.newGame')}
               variant={hasQuickStart ? 'secondary' : 'primary'}
               fullWidth
               onPress={() => router.push('/setup')}
-              accessibilityLabel="Configure a new game"
+              accessibilityLabel={t('home.newGameA11y')}
             />
           </Animated.View>
           <Animated.View entering={FadeInDown.delay(320)}>
             <Button
-              label="Browse Categories"
+              label={t('home.browseCategories')}
               variant="secondary"
               fullWidth
               onPress={() => router.push('/categories')}
-              accessibilityLabel="Browse all categories"
+              accessibilityLabel={t('home.browseA11y')}
             />
           </Animated.View>
         </View>
