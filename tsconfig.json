@@ -22,5 +22,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", ".expo", "dist"]
+  "exclude": ["node_modules", ".expo", "dist", "**/__tests__/**", "__mocks__/**"]
 }

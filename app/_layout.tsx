@@ -17,13 +17,36 @@ import {
 import { DMMono_400Regular } from '@expo-google-fonts/dm-mono';
 import { useFonts } from 'expo-font';
 import { store } from '@/store';
+import { loadQuestions } from '@/store/slices/gameSlice';
+import { hydrate as hydrateSettings } from '@/store/slices/settingsSlice';
+import { hydrate as hydratePacks } from '@/store/slices/packsSlice';
+import { safeFlattenQuestions } from '@/utils/questionLoader';
+import { storageApi } from '@/utils/storage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { ToastProvider } from '@/components/ui/Toast';
 import { colors } from '@/constants/theme';
+import questionsData from '@/data/questions.json';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore — may already be hidden */
 });
+
+// Boot once at module load: parse questions, hydrate persisted state.
+// Runs before React renders anything because it's outside the component.
+(function boot() {
+  try {
+    const flattened = safeFlattenQuestions(questionsData);
+    if (flattened.length > 0) store.dispatch(loadQuestions(flattened));
+
+    const savedSettings = storageApi.loadSettings();
+    if (savedSettings) store.dispatch(hydrateSettings(savedSettings));
+
+    const savedPacks = storageApi.loadUnlockedPacks();
+    if (savedPacks.length > 0) store.dispatch(hydratePacks(savedPacks));
+  } catch (err) {
+    if (__DEV__) console.error('Boot failure:', err);
+  }
+})();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({

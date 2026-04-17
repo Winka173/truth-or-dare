@@ -55,6 +55,8 @@ export interface QuestionAnalytics {
 
 export interface Question {
   id: string;
+  /** Attached at load time by `flattenQuestions` — not present in raw JSON. */
+  category_id: string;
   type: QuestionType;
   age_group: AgeGroup;
   text: string;
@@ -97,8 +99,9 @@ export interface RawCategory {
   icon: string;
   color: string;
   explicit: boolean;
-  pack: CategoryPack;
-  questions: Question[];
+  pack?: CategoryPack;
+  /** Raw questions don't carry `category_id` — it's added by `flattenQuestions`. */
+  questions: Omit<Question, 'category_id'>[];
 }
 
 export interface QuestionDatabase {
@@ -108,7 +111,7 @@ export interface QuestionDatabase {
     total_categories: number;
     languages: LanguageCode[];
   };
-  age_groups: Record<AgeGroup, { label: string; min_age: number; max_age: number | null }>;
-  seasonal_packs: Array<{ id: string; label: string }>;
+  age_groups: Record<AgeGroup, { label: string; range?: string; min_age: number; max_age: number | null }>;
+  seasonal_packs: string[];
   categories: RawCategory[];
 }
