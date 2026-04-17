@@ -22,6 +22,7 @@ import { store } from '@/store';
 import { loadQuestions } from '@/store/slices/gameSlice';
 import { hydrate as hydrateSettings } from '@/store/slices/settingsSlice';
 import { hydrate as hydratePacks } from '@/store/slices/packsSlice';
+import { hydrate as hydrateFavorites } from '@/store/slices/favoritesSlice';
 import { safeFlattenQuestions } from '@/utils/questionLoader';
 import { storageApi } from '@/utils/storage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -45,6 +46,9 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
     const savedPacks = storageApi.loadUnlockedPacks();
     if (savedPacks.length > 0) store.dispatch(hydratePacks(savedPacks));
+
+    const savedFavorites = storageApi.loadFavoriteIds();
+    if (savedFavorites.length > 0) store.dispatch(hydrateFavorites(savedFavorites));
 
     // Sync RTL with the persisted locale. Note: I18nManager.forceRTL takes
     // effect on the NEXT app launch on native platforms — so a user

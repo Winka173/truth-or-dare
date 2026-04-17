@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Share2 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Button } from '@/components/ui/Button';
@@ -52,6 +53,21 @@ export default function ResultsScreen() {
     router.replace('/');
   };
 
+  const handleShare = async () => {
+    try {
+      const lines: string[] = ['Truth or Dare — results'];
+      if (winner) {
+        lines.push(`🏆 ${winner.name} — ${winner.score} pts`);
+      }
+      ranked.slice(1).forEach((p, i) => {
+        lines.push(`#${i + 2} ${p.name} — ${p.score} pts`);
+      });
+      await Share.share({ message: lines.join('\n') });
+    } catch {
+      /* user cancelled or share unavailable */
+    }
+  };
+
   const showConfetti = winner !== undefined && winner.score > 0;
 
   return (
@@ -76,6 +92,14 @@ export default function ResultsScreen() {
           ))}
         </View>
         <View style={styles.actions}>
+          <Button
+            label="Share"
+            variant="secondary"
+            fullWidth
+            icon={<Share2 size={18} color={colors.primary.default} />}
+            onPress={handleShare}
+            accessibilityLabel="Share results"
+          />
           <Button
             label="Play Again"
             variant="primary"

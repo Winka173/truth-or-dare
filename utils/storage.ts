@@ -15,6 +15,7 @@ const KEYS = {
   recentQuestionIds: 'recent_question_ids',
   lastPlayers: 'last_players',
   lastGameConfig: 'last_game_config',
+  favoriteIds: 'favorite_ids',
 } as const;
 
 function getJSON<T>(key: string): T | null {
@@ -45,6 +46,9 @@ export const storageApi = {
   saveLastPlayers: (names: readonly string[]): void => setJSON(KEYS.lastPlayers, names),
   loadLastConfig: (): GameConfig | null => getJSON<GameConfig>(KEYS.lastGameConfig),
   saveLastConfig: (config: GameConfig): void => setJSON(KEYS.lastGameConfig, config),
+
+  loadFavoriteIds: (): string[] => getJSON<string[]>(KEYS.favoriteIds) ?? [],
+  saveFavoriteIds: (ids: readonly string[]): void => setJSON(KEYS.favoriteIds, ids),
 };
 
 export function __clearAllStorage(): void {

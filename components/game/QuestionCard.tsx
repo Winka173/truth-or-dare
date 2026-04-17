@@ -7,8 +7,10 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Star } from 'lucide-react-native';
 import { CATEGORY_BY_ID } from '@/constants/categories';
 import { animation, colors, fonts, fontSize, radius, shadow, spacing } from '@/constants/theme';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { getTranslatedText } from '@/utils/questionFilter';
 import type { LanguageCode, Question } from '@/types/question';
@@ -32,6 +34,8 @@ export function QuestionCard({
   const rotation = useSharedValue(0);
   const cat = CATEGORY_BY_ID[question.category_id];
   const reduceMotion = useReduceMotion();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
+  const favorited = isFavorite(question.id);
 
   useEffect(() => {
     setIsFlipped(false);
@@ -73,6 +77,23 @@ export function QuestionCard({
       }
     >
       <Animated.View style={[styles.card, styles.front, frontStyle]}>
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            toggleFavorite(question.id);
+          }}
+          style={styles.favoriteBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={favorited ? 'Remove from favorites' : 'Save to favorites'}
+          accessibilityState={{ selected: favorited }}
+        >
+          <Star
+            size={20}
+            color={favorited ? colors.primary.default : colors.text.muted}
+            fill={favorited ? colors.primary.default : 'transparent'}
+          />
+        </Pressable>
         {question.escalation_level != null ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Level {question.escalation_level}/5</Text>
@@ -141,6 +162,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  favoriteBtn: {
+    position: 'absolute',
+    top: spacing.md,
+    left: spacing.md,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
+    backgroundColor: colors.bg.containerHighest,
+    zIndex: 2,
   },
   badge: {
     position: 'absolute',
