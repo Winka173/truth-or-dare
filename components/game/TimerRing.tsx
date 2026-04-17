@@ -80,7 +80,9 @@ export function TimerRing({ seconds, total, size = 120, strokeWidth = 8 }: Timer
           animatedProps={ringProps}
         />
       </Svg>
-      <Animated.Text style={[styles.text, textStyle]}>{seconds}</Animated.Text>
+      <Animated.Text style={[styles.text, textStyle]} maxFontSizeMultiplier={1.3}>
+        {seconds}
+      </Animated.Text>
     </View>
   );
 }

@@ -9,6 +9,7 @@ import { PlayerSetup } from '@/components/game/PlayerSetup';
 import { AgeGroupPicker } from '@/components/game/AgeGroupPicker';
 import { MoodChip } from '@/components/game/MoodChip';
 import { useGame } from '@/hooks/useGame';
+import { useQuestions } from '@/hooks/useQuestions';
 import { useSettings } from '@/hooks/useSettings';
 import { storageApi } from '@/utils/storage';
 import { GAME_CONFIG } from '@/constants/config';
@@ -63,19 +64,22 @@ export default function GameSetupScreen() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>(savedConfig?.typeFilter ?? 'both');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const canStart = players.length >= 1;
+  const draftConfig: GameConfig = {
+    ageGroup,
+    mood,
+    categoryIds,
+    timer,
+    questionsPerRound,
+    allowSkips,
+    typeFilter,
+  };
+  const pool = useQuestions(draftConfig);
+  const poolSize = pool.length;
+  const canStart = players.length >= 1 && poolSize > 0;
 
   const handleStart = () => {
     if (!canStart) return;
-    const config: GameConfig = {
-      ageGroup,
-      mood,
-      categoryIds,
-      timer,
-      questionsPerRound,
-      allowSkips,
-      typeFilter,
-    };
+    const config = draftConfig;
     const playerObjects: Player[] = players.map((name, i) => ({
       id: `p_${Date.now()}_${i}`,
       name,
@@ -248,13 +252,22 @@ export default function GameSetupScreen() {
         ) : null}
 
         <View style={styles.startButton}>
+          {poolSize === 0 ? (
+            <Text style={styles.emptyPoolWarning}>
+              No questions match these settings. Try a different age group or mood, or unlock a pack.
+            </Text>
+          ) : (
+            <Text style={styles.poolCount}>{poolSize} questions available</Text>
+          )}
           <Button
             label="Start Game"
             variant="primary"
             fullWidth
             disabled={!canStart}
             onPress={handleStart}
-            accessibilityLabel="Start game"
+            accessibilityLabel={
+              canStart ? 'Start game' : 'Cannot start: no matching questions'
+            }
           />
         </View>
       </ScrollView>
@@ -344,5 +357,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.onPrimary,
     alignSelf: 'flex-end',
   },
-  startButton: { marginTop: spacing.lg },
+  startButton: { marginTop: spacing.lg, gap: spacing.sm },
+  emptyPoolWarning: {
+    fontFamily: fonts.body,
+    fontSize: fontSize.sm,
+    color: colors.semantic.warning,
+    textAlign: 'center',
+  },
+  poolCount: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize.xs,
+    color: colors.text.muted,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
 });
