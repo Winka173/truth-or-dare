@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"/c/Users/Winka/.claude/skills\")",
+      "Read(//c/Users/Winka/.claude/**)",
+      "Read(//c/Users/Winka/.cursor/**)",
+      "Read(//c/Users/Winka/**)",
+      "Bash(claude mcp *)",
+      "Bash(node -e \"const c=require\\('/c/Users/Winka/.claude.json'\\);const m=c.mcpServers||{};console.log\\('Global mcpServers keys:',Object.keys\\(m\\)\\);for\\(const k of Object.keys\\(m\\)\\){console.log\\(k,'->',JSON.stringify\\(m[k]\\).slice\\(0,200\\)\\)}\")",
+      "Bash(where claude *)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Bash(npm root *)",
+      "mcp__stitch__list_projects",
+      "mcp__stitch__list_design_systems",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(git config *)",
+      "Bash(node -e \"const c=require\\('/c/Users/Winka/.claude.json'\\);const m=c.mcpServers||{};console.log\\('Global MCP servers:',Object.keys\\(m\\).join\\(', '\\)\\)\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Winka\\OneDrive\\Documents\\truth-or-dare\\.claude",
+      "c:\\Users\\Winka\\.cursor"
+    ]
+  }
+}
