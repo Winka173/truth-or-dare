@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Confetti } from '@/components/game/Confetti';
 import { ResultCard } from '@/components/game/ResultCard';
 import { useGame } from '@/hooks/useGame';
 import { colors, fonts, fontSize, spacing } from '@/constants/theme';
@@ -51,8 +52,11 @@ export default function ResultsScreen() {
     router.replace('/');
   };
 
+  const showConfetti = winner !== undefined && winner.score > 0;
+
   return (
     <SafeAreaView style={styles.safe}>
+      {showConfetti ? <Confetti count={32} /> : null}
       <ScreenHeader title="Results" />
       <ScrollView
         contentContainerStyle={styles.content}

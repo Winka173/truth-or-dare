@@ -16,6 +16,7 @@ export interface QuestionCardProps {
   question: Question;
   playerName: string;
   language?: LanguageCode;
+  hapticEnabled?: boolean;
   onFlip?: () => void;
 }
 
@@ -23,6 +24,7 @@ export function QuestionCard({
   question,
   playerName,
   language = 'en',
+  hapticEnabled = true,
   onFlip,
 }: QuestionCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -48,9 +50,11 @@ export function QuestionCard({
     if (isFlipped) return;
     rotation.value = withSpring(180, animation.cardFlip);
     setIsFlipped(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {
-      /* ignore */
-    });
+    if (hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {
+        /* ignore */
+      });
+    }
     onFlip?.();
   };
 

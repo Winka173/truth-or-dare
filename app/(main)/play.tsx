@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { Check, RotateCcw, X } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
@@ -66,6 +67,19 @@ export default function PlayScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [flipped, timerTotal, questionId]);
+
+  useEffect(() => {
+    if (!settings.hapticEnabled || timeLeft === null) return;
+    if (timeLeft === 10) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {
+        /* ignore */
+      });
+    } else if (timeLeft === 3) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {
+        /* ignore */
+      });
+    }
+  }, [timeLeft, settings.hapticEnabled]);
 
   if (!session || !currentPlayer) {
     return (
@@ -156,6 +170,7 @@ export default function PlayScreen() {
           question={currentQuestion}
           playerName={currentPlayer.name}
           language={settings.language}
+          hapticEnabled={settings.hapticEnabled}
           onFlip={() => setFlipped(true)}
         />
       </View>
