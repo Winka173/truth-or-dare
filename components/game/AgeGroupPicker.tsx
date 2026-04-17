@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { animation, colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
 import type { AgeGroup } from '@/types/question';
 
@@ -39,6 +41,17 @@ export interface AgeGroupPickerProps {
 }
 
 export function AgeGroupPicker({ value, onChange }: AgeGroupPickerProps) {
+  const [pending18, setPending18] = useState(false);
+
+  const handleSelect = (id: AgeGroup) => {
+    // Require explicit confirmation when moving INTO 18+ from any other group
+    if (id === '18plus' && value !== '18plus') {
+      setPending18(true);
+      return;
+    }
+    onChange(id);
+  };
+
   return (
     <View style={styles.list}>
       {OPTIONS.map((o, i) => {
@@ -49,7 +62,7 @@ export function AgeGroupPicker({ value, onChange }: AgeGroupPickerProps) {
             entering={FadeInDown.delay(i * animation.entry.setupRowStagger)}
           >
             <Pressable
-              onPress={() => onChange(o.id)}
+              onPress={() => handleSelect(o.id)}
               style={[styles.row, selected && styles.rowSelected]}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
@@ -61,12 +74,24 @@ export function AgeGroupPicker({ value, onChange }: AgeGroupPickerProps) {
                 <Text style={styles.description}>{o.description}</Text>
               </View>
               {o.id === '18plus' ? (
-                <Text style={styles.warning}>Confirm you are 18 or older</Text>
+                <Text style={styles.warning}>Confirmation required</Text>
               ) : null}
             </Pressable>
           </Animated.View>
         );
       })}
+      <ConfirmSheet
+        visible={pending18}
+        title="Confirm your age"
+        message="18+ mode includes adult and explicit content. You must be at least 18 years old to continue."
+        confirmLabel="I'm 18 or older"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          onChange('18plus');
+          setPending18(false);
+        }}
+        onCancel={() => setPending18(false)}
+      />
     </View>
   );
 }

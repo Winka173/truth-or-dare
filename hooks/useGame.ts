@@ -9,7 +9,7 @@ import {
   startGame,
 } from '@/store/slices/gameSlice';
 import { buildQuestionPool } from '@/utils/questionFilter';
-import { preparePool, pushRecentId } from '@/utils/shuffle';
+import { prepareEscalatingPool, preparePool, pushRecentId } from '@/utils/shuffle';
 import { storageApi } from '@/utils/storage';
 import type { GameConfig, Player } from '@/types/game';
 import type { QuestionType } from '@/types/question';
@@ -35,9 +35,18 @@ export function useGame() {
     (config: GameConfig, players: Player[]) => {
       const pool = buildQuestionPool(allQuestions, config, unlockedPacks);
       const recentIds = storageApi.loadRecentIds();
-      const shuffled = preparePool(pool, recentIds);
 
-      dispatch(startGame({ config, players, questionPool: shuffled }));
+      // Escalating series: preserve 1→5 ordering per bundle instead of shuffling
+      const isEscalatingOnly =
+        Array.isArray(config.categoryIds) &&
+        config.categoryIds.length === 1 &&
+        config.categoryIds[0] === 'escalating_mode';
+
+      const ordered = isEscalatingOnly
+        ? prepareEscalatingPool(pool)
+        : preparePool(pool, recentIds);
+
+      dispatch(startGame({ config, players, questionPool: ordered }));
 
       storageApi.saveLastConfig(config);
       storageApi.saveLastPlayers(players.map((p) => p.name));

@@ -9,7 +9,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { CATEGORY_BY_ID } from '@/constants/categories';
 import { animation, colors, fonts, fontSize, radius, shadow, spacing } from '@/constants/theme';
-import { applyChainPrompt, getTranslatedText } from '@/utils/questionFilter';
+import { getTranslatedText } from '@/utils/questionFilter';
 import type { LanguageCode, Question } from '@/types/question';
 
 export interface QuestionCardProps {
@@ -60,10 +60,6 @@ export function QuestionCard({
 
   const isTruth = question.type === 'truth';
   const text = getTranslatedText(question, language);
-  const chainPrompt =
-    question.chain && question.chain_prompt
-      ? applyChainPrompt(question.chain_prompt, playerName)
-      : null;
 
   return (
     <Pressable
@@ -104,11 +100,6 @@ export function QuestionCard({
         <Text style={styles.questionText}>{text}</Text>
         {question.follow_up_question ? (
           <Text style={styles.followUp}>{question.follow_up_question}</Text>
-        ) : null}
-        {chainPrompt ? (
-          <Animated.View entering={FadeIn.delay(200)} style={styles.chainBanner}>
-            <Text style={styles.chainText}>{chainPrompt}</Text>
-          </Animated.View>
         ) : null}
         {question.hot_seat ? (
           <Animated.View entering={FadeIn.delay(200)} style={styles.hotSeatBanner}>
@@ -213,18 +204,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
     fontStyle: 'italic',
-  },
-  chainBanner: {
-    marginTop: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: colors.bg.containerHighest,
-    borderRadius: radius.lg,
-  },
-  chainText: {
-    fontFamily: fonts.bodyMed,
-    fontSize: fontSize.sm,
-    color: colors.tertiary.default,
-    textAlign: 'center',
   },
   hotSeatBanner: {
     marginTop: spacing.lg,

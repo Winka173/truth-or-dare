@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BackHandler,
   Platform,
   Pressable,
   SafeAreaView,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Check, RotateCcw, X } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
@@ -20,17 +21,37 @@ import { StreakBadge } from '@/components/game/StreakBadge';
 import { QuestionCard } from '@/components/game/QuestionCard';
 import { useGame } from '@/hooks/useGame';
 import { useSettings } from '@/hooks/useSettings';
-import { colors, radius, spacing } from '@/constants/theme';
+import { useAppSelector } from '@/store/hooks';
+import { applyChainPrompt, getTranslatedText } from '@/utils/questionFilter';
+import { colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
 
 export default function PlayScreen() {
   const { session, currentQuestion, currentPlayer, complete, skip, next, end } = useGame();
   const { settings } = useSettings();
+  const allQuestions = useAppSelector((s) => s.game.allQuestions);
   const [flipped, setFlipped] = useState(false);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  // Chain prompt from the previous player, shown to current player before flip
+  const [pendingChain, setPendingChain] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const questionId = currentQuestion?.id;
-  const timerTotal = session?.config.timer ?? 0;
+  const configTimer = session?.config.timer ?? 0;
+  // Hot seat questions override the session timer with their own duration
+  const effectiveTimer =
+    currentQuestion?.hot_seat && currentQuestion.duration_seconds
+      ? currentQuestion.duration_seconds
+      : configTimer;
+
+  // Resolve the bonus related question text (PRD §5.7) — first related_questions ID
+  const bonusRelatedText = useMemo(() => {
+    if (!currentQuestion || currentQuestion.related_questions.length === 0) return null;
+    const relatedId = currentQuestion.related_questions[0];
+    if (!relatedId) return null;
+    const related = allQuestions.find((q) => q.id === relatedId);
+    if (!related) return null;
+    return getTranslatedText(related, settings.language);
+  }, [currentQuestion, allQuestions, settings.language]);
 
   useEffect(() => {
     if (!session) {
@@ -49,11 +70,11 @@ export default function PlayScreen() {
 
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (!flipped || timerTotal === 0) {
+    if (!flipped || effectiveTimer === 0) {
       setTimeLeft(null);
       return;
     }
-    setTimeLeft(timerTotal);
+    setTimeLeft(effectiveTimer);
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === null || prev <= 0) {
@@ -66,7 +87,7 @@ export default function PlayScreen() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [flipped, timerTotal, questionId]);
+  }, [flipped, effectiveTimer, questionId]);
 
   useEffect(() => {
     if (!settings.hapticEnabled || timeLeft === null) return;
@@ -113,6 +134,14 @@ export default function PlayScreen() {
   const isLastQuestion = session.currentQuestionIndex >= totalQuestions - 1;
 
   const advance = () => {
+    // Capture chain prompt for next player BEFORE we advance (PRD §5.3 interpretation 1)
+    if (
+      currentQuestion.chain &&
+      currentQuestion.chain_prompt &&
+      !isLastQuestion
+    ) {
+      setPendingChain(applyChainPrompt(currentQuestion.chain_prompt, currentPlayer.name));
+    }
     if (isLastQuestion) {
       end();
       router.replace('/results');
@@ -164,6 +193,28 @@ export default function PlayScreen() {
         <View style={[styles.progressBar, { width: `${Math.round(progress * 100)}%` }]} />
       </View>
 
+      {!flipped && pendingChain ? (
+        <Animated.View
+          key={`chain-${currentQuestion.id}`}
+          entering={FadeInDown}
+          style={styles.chainBanner}
+        >
+          <Text style={styles.chainBannerLabel}>Chain</Text>
+          <Text style={styles.chainBannerText}>{pendingChain}</Text>
+        </Animated.View>
+      ) : null}
+
+      {!flipped && currentQuestion.props.length > 0 ? (
+        <Animated.View
+          key={`props-${currentQuestion.id}`}
+          entering={FadeInDown.delay(100)}
+          style={styles.propsBadge}
+        >
+          <Text style={styles.propsBadgeLabel}>Grab</Text>
+          <Text style={styles.propsBadgeText}>{currentQuestion.props.join(' · ')}</Text>
+        </Animated.View>
+      ) : null}
+
       <View style={styles.cardWrap}>
         <QuestionCard
           key={currentQuestion.id}
@@ -171,7 +222,10 @@ export default function PlayScreen() {
           playerName={currentPlayer.name}
           language={settings.language}
           hapticEnabled={settings.hapticEnabled}
-          onFlip={() => setFlipped(true)}
+          onFlip={() => {
+            setFlipped(true);
+            setPendingChain(null);
+          }}
         />
       </View>
 
@@ -180,7 +234,7 @@ export default function PlayScreen() {
 
         {flipped && timeLeft !== null ? (
           <View style={styles.timerWrap}>
-            <TimerRing seconds={timeLeft} total={timerTotal} size={92} strokeWidth={6} />
+            <TimerRing seconds={timeLeft} total={effectiveTimer} size={92} strokeWidth={6} />
           </View>
         ) : null}
 
@@ -208,6 +262,13 @@ export default function PlayScreen() {
                 accessibilityLabel="Mark done"
               />
             </View>
+          </Animated.View>
+        ) : null}
+
+        {flipped && bonusRelatedText ? (
+          <Animated.View entering={FadeIn.delay(300)} style={styles.bonusWrap}>
+            <Text style={styles.bonusLabel}>Bonus prompt</Text>
+            <Text style={styles.bonusText}>{bonusRelatedText}</Text>
           </Animated.View>
         ) : null}
       </View>
@@ -266,4 +327,69 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   actionHalf: { flex: 1 },
+  chainBanner: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.bg.containerHighest,
+    borderRadius: radius.lg,
+    gap: 2,
+  },
+  chainBannerLabel: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize.xs,
+    color: colors.tertiary.default,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  chainBannerText: {
+    fontFamily: fonts.bodyMed,
+    fontSize: fontSize.sm,
+    color: colors.text.primary,
+  },
+  propsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    backgroundColor: colors.primary.container,
+    borderRadius: radius.full,
+  },
+  propsBadgeLabel: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize.xs,
+    color: colors.primary.onPrimary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  propsBadgeText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: fontSize.sm,
+    color: colors.primary.onPrimary,
+  },
+  bonusWrap: {
+    alignSelf: 'stretch',
+    padding: spacing.md,
+    backgroundColor: colors.bg.containerHighest,
+    borderRadius: radius.lg,
+    gap: 2,
+    marginTop: spacing.sm,
+  },
+  bonusLabel: {
+    fontFamily: fonts.mono,
+    fontSize: fontSize.xs,
+    color: colors.tertiary.default,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  bonusText: {
+    fontFamily: fonts.body,
+    fontSize: fontSize.sm,
+    color: colors.text.primary,
+    lineHeight: fontSize.sm * 1.4,
+  },
 });
