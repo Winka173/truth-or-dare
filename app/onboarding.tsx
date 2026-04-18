@@ -2,6 +2,10 @@
 import { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, type NativeSyntheticEvent, type NativeScrollEvent, Dimensions, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
+import onb1 from '@/assets/lottie/onboarding-1.json';
+import onb2 from '@/assets/lottie/onboarding-2.json';
+import onb3 from '@/assets/lottie/onboarding-3.json';
 import { useAppDispatch } from '@/store/hooks';
 import { setOnboardingComplete } from '@/store/slices/settingsSlice';
 import { storageApi } from '@/utils/storage';
@@ -13,9 +17,9 @@ import { fonts, spacing } from '@/constants/theme';
 const { width } = Dimensions.get('window');
 
 const slides = [
-  { emoji: '👥', title: 'Pick your players', subtitle: 'Add up to 8 friends' },
-  { emoji: '🎉', title: 'Choose your vibe', subtitle: 'Party, chill, intimate, or icebreaker' },
-  { emoji: '😈', title: 'Dare each other', subtitle: 'Truth or Dare — your rules' },
+  { lottie: onb1, title: 'Pick your players', subtitle: 'Add up to 8 friends' },
+  { lottie: onb2, title: 'Choose your vibe', subtitle: 'Party, chill, intimate, or icebreaker' },
+  { lottie: onb3, title: 'Dare each other', subtitle: 'Truth or Dare — your rules' },
 ];
 
 export default function OnboardingRoute() {
@@ -62,7 +66,7 @@ export default function OnboardingRoute() {
       >
         {slides.map((slide) => (
           <View key={slide.title} style={[styles.slide, { width }]}>
-            <Text style={styles.emoji}>{slide.emoji}</Text>
+            <LottieView source={slide.lottie} autoPlay loop style={styles.lottie} resizeMode="contain" />
             <Text style={styles.title}>{slide.title}</Text>
             <Text style={styles.subtitle}>{slide.subtitle}</Text>
           </View>
@@ -88,7 +92,7 @@ const styles = StyleSheet.create({
   skip: { fontFamily: fonts.bodySemi, fontSize: 16, color: 'rgba(255,255,255,0.80)' },
   scroll: { flex: 1 },
   slide: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl, gap: spacing.md },
-  emoji: { fontSize: 120, marginBottom: spacing.lg },
+  lottie: { width: 240, height: 240, marginBottom: spacing.lg },
   title: { fontFamily: fonts.heading, fontSize: 34, color: '#FFFFFF', textAlign: 'center' },
   subtitle: { fontFamily: fonts.body, fontSize: 17, color: 'rgba(255,255,255,0.80)', textAlign: 'center', lineHeight: 24 },
   bottom: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.xl },
