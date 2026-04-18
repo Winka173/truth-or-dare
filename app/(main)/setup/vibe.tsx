@@ -2,6 +2,7 @@
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
+import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming } from 'react-native-reanimated';
 import { ArrowLeft, Lock } from 'lucide-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
@@ -19,6 +20,50 @@ const MOODS: { value: Mood; label: string; emoji: string }[] = [
   { value: 'chill', label: 'Chill', emoji: '😎' },
   { value: 'icebreaker', label: 'Icebreaker', emoji: '🧊' },
 ];
+
+function CategoryChip({
+  cat,
+  selected,
+  locked,
+  onToggle,
+}: {
+  cat: (typeof CATEGORIES)[number];
+  selected: boolean;
+  locked: boolean;
+  onToggle: () => void;
+}) {
+  const shake = useSharedValue(0);
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
+
+  function handlePress() {
+    if (locked) {
+      shake.value = withSequence(
+        withTiming(-4, { duration: 50 }),
+        withTiming(4, { duration: 50 }),
+        withTiming(-4, { duration: 50 }),
+        withTiming(0, { duration: 50 }),
+      );
+      return;
+    }
+    onToggle();
+  }
+
+  return (
+    <Animated.View style={style}>
+      <Pressable
+        onPress={handlePress}
+        style={[styles.catChip, selected && styles.catChipSelected, locked && styles.catChipLocked]}
+        accessibilityRole="button"
+        accessibilityLabel={cat.label}
+        accessibilityState={{ selected, disabled: locked }}
+      >
+        <Text style={styles.catEmoji}>{cat.icon}</Text>
+        <Text style={styles.catLabel} numberOfLines={1}>{cat.label}</Text>
+        {locked ? <Lock size={14} color="rgba(255,255,255,0.60)" /> : null}
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 export default function VibeRoute() {
   const router = useRouter();
@@ -104,17 +149,12 @@ export default function VibeRoute() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', damping: 14, stiffness: 150, delay: i * 30 }}
               >
-                <Pressable
-                  onPress={() => !locked && wizardActions.toggleCategory(cat.id)}
-                  style={[styles.catChip, selected && styles.catChipSelected, locked && styles.catChipLocked]}
-                  accessibilityRole="button"
-                  accessibilityLabel={cat.label}
-                  accessibilityState={{ selected, disabled: !!locked }}
-                >
-                  <Text style={styles.catEmoji}>{cat.icon}</Text>
-                  <Text style={styles.catLabel} numberOfLines={1}>{cat.label}</Text>
-                  {locked ? <Lock size={14} color="rgba(255,255,255,0.60)" /> : null}
-                </Pressable>
+                <CategoryChip
+                  cat={cat}
+                  selected={selected}
+                  locked={!!locked}
+                  onToggle={() => wizardActions.toggleCategory(cat.id)}
+                />
               </MotiView>
             );
           })}
