@@ -1,14 +1,15 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
-import { Button } from './Button';
+// components/ui/ConfirmSheet.tsx
+import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { fonts, spacing, radius } from '@/constants/theme';
+import { GradientButton } from './GradientButton';
+import { TextButton } from './TextButton';
 
-export interface ConfirmSheetProps {
+interface ConfirmSheetProps {
   visible: boolean;
   title: string;
   message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  destructive?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -19,30 +20,32 @@ export function ConfirmSheet({
   message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
-  destructive,
   onConfirm,
   onCancel,
 }: ConfirmSheetProps) {
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+      statusBarTranslucent
+    >
       <Pressable style={styles.backdrop} onPress={onCancel}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        {/* Inner Pressable prevents tap-through closing the sheet accidentally */}
+        <Pressable style={styles.sheet}>
           <Text style={styles.title}>{title}</Text>
           {message ? <Text style={styles.message}>{message}</Text> : null}
-          <View style={styles.buttons}>
-            <Button
-              label={cancelLabel}
-              variant="secondary"
-              fullWidth
-              onPress={onCancel}
-              accessibilityLabel={cancelLabel}
-            />
-            <Button
+          <View style={styles.actions}>
+            <GradientButton
               label={confirmLabel}
-              variant={destructive ? 'destructive' : 'primary'}
-              fullWidth
               onPress={onConfirm}
               accessibilityLabel={confirmLabel}
+            />
+            <TextButton
+              label={cancelLabel}
+              onPress={onCancel}
+              accessibilityLabel={cancelLabel}
             />
           </View>
         </Pressable>
@@ -54,29 +57,31 @@ export function ConfirmSheet({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay.backdrop,
+    backgroundColor: 'rgba(0,0,0,0.60)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.bg.containerHighest,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
+    backgroundColor: '#1A1A2E',
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     padding: spacing.xl,
-    paddingBottom: spacing['2xl'],
     gap: spacing.md,
+    paddingBottom: spacing['2xl'],
   },
   title: {
     fontFamily: fonts.heading,
-    fontSize: fontSize.xl,
-    color: colors.text.primary,
+    fontSize: 22,
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   message: {
     fontFamily: fonts.body,
-    fontSize: fontSize.base,
-    color: colors.text.secondary,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.70)',
+    textAlign: 'center',
   },
-  buttons: {
-    marginTop: spacing.md,
-    gap: spacing.sm,
+  actions: {
+    gap: spacing.md,
+    marginTop: spacing.sm,
   },
 });
