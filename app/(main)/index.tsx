@@ -6,6 +6,7 @@ import { Settings } from 'lucide-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { TextButton } from '@/components/ui/TextButton';
+import { FloatingEmojis } from '@/components/ui/FloatingEmojis';
 import { fonts, spacing } from '@/constants/theme';
 
 export default function HomeRoute() {
@@ -13,6 +14,7 @@ export default function HomeRoute() {
 
   return (
     <GradientScreen gradient="home">
+      <FloatingEmojis />
       <View style={styles.topBar}>
         <View style={{ flex: 1 }} />
         <Pressable onPress={() => router.push('/(main)/settings')} hitSlop={16} accessibilityRole="button" accessibilityLabel="Open settings">
