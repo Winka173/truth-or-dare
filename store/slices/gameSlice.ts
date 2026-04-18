@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { GAME_CONFIG } from '@/constants/config';
-import type { GameConfig, GameSession, Player, QuestionHistory } from '@/types/game';
+import type { CustomQuestion, GameConfig, GameSession, Player, QuestionHistory } from '@/types/game';
 import type { Question, QuestionType } from '@/types/question';
 
 export interface GameState {
@@ -8,6 +8,7 @@ export interface GameState {
   session: GameSession | null;
   history: QuestionHistory[];
   isActive: boolean;
+  customQuestions: CustomQuestion[];
 }
 
 const initialState: GameState = {
@@ -15,6 +16,7 @@ const initialState: GameState = {
   session: null,
   history: [],
   isActive: false,
+  customQuestions: [],
 };
 
 export const gameSlice = createSlice({
@@ -180,6 +182,17 @@ export const gameSlice = createSlice({
       state.session = null;
       state.history = [];
       state.isActive = false;
+      state.customQuestions = [];
+    },
+
+    /** Append a user-created question to the custom questions pool. */
+    addCustomQuestion(state, action: PayloadAction<CustomQuestion>) {
+      state.customQuestions.push(action.payload);
+    },
+
+    /** Clear all user-created custom questions. */
+    clearCustomQuestions(state) {
+      state.customQuestions = [];
     },
   },
 });
@@ -193,5 +206,7 @@ export const {
   undoLastTurn,
   endGame,
   resetGame,
+  addCustomQuestion,
+  clearCustomQuestions,
 } = gameSlice.actions;
 export default gameSlice.reducer;

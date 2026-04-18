@@ -63,3 +63,10 @@ export interface PackState {
   unlockedPackIds: PackId[];
   iapStatus: IapStatus;
 }
+
+export interface CustomQuestion {
+  /** Prefixed with "custom_" to avoid collision with bundled question IDs. */
+  id: string;
+  text: string;
+  type: 'truth' | 'dare';
+}

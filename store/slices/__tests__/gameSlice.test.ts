@@ -1,4 +1,6 @@
 import gameReducer, {
+  addCustomQuestion,
+  clearCustomQuestions,
   completeQuestion,
   endGame,
   loadQuestions,
@@ -8,7 +10,7 @@ import gameReducer, {
   startGame,
   type GameState,
 } from '@/store/slices/gameSlice';
-import type { GameConfig, Player } from '@/types/game';
+import type { CustomQuestion, GameConfig, Player } from '@/types/game';
 import type { Question } from '@/types/question';
 
 const makeQuestion = (over: Partial<Question> = {}): Question => ({
@@ -244,5 +246,61 @@ describe('gameSlice — endGame / resetGame', () => {
     expect(state.session).toBeNull();
     expect(state.history).toEqual([]);
     expect(state.isActive).toBe(false);
+  });
+});
+
+describe('gameSlice — customQuestions', () => {
+  it('initialises as empty array', () => {
+    const state = gameReducer(undefined, { type: '@@INIT' });
+    expect(state.customQuestions).toEqual([]);
+  });
+
+  it('addCustomQuestion appends a question', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Do a handstand', type: 'dare' };
+    const state = gameReducer(undefined, addCustomQuestion(q));
+    expect(state.customQuestions).toHaveLength(1);
+    expect(state.customQuestions[0]).toEqual(q);
+  });
+
+  it('clearCustomQuestions empties the array', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Tell a secret', type: 'truth' };
+    let state = gameReducer(undefined, addCustomQuestion(q));
+    state = gameReducer(state, clearCustomQuestions());
+    expect(state.customQuestions).toEqual([]);
+  });
+
+  it('resetGame also clears customQuestions', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Tell a secret', type: 'truth' };
+    let state = gameReducer(undefined, addCustomQuestion(q));
+    state = gameReducer(state, resetGame());
+    expect(state.customQuestions).toEqual([]);
+  });
+});
+
+describe('gameSlice — customQuestions', () => {
+  it('initialises as empty array', () => {
+    const state = gameReducer(undefined, { type: '@@INIT' });
+    expect(state.customQuestions).toEqual([]);
+  });
+
+  it('addCustomQuestion appends a question', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Do a handstand', type: 'dare' };
+    const state = gameReducer(undefined, addCustomQuestion(q));
+    expect(state.customQuestions).toHaveLength(1);
+    expect(state.customQuestions[0]).toEqual(q);
+  });
+
+  it('clearCustomQuestions empties the array', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Tell a secret', type: 'truth' };
+    let state = gameReducer(undefined, addCustomQuestion(q));
+    state = gameReducer(state, clearCustomQuestions());
+    expect(state.customQuestions).toEqual([]);
+  });
+
+  it('resetGame also clears customQuestions', () => {
+    const q: CustomQuestion = { id: 'custom_1', text: 'Tell a secret', type: 'truth' };
+    let state = gameReducer(undefined, addCustomQuestion(q));
+    state = gameReducer(state, resetGame());
+    expect(state.customQuestions).toEqual([]);
   });
 });
