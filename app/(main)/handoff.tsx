@@ -3,10 +3,12 @@ import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView, MotiText } from 'moti';
+import LottieView from 'lottie-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { useAppSelector } from '@/store/hooks';
 import { fonts, spacing } from '@/constants/theme';
+import drumroll from '@/assets/lottie/drumroll.json';
 
 export default function HandoffRoute() {
   const router = useRouter();
@@ -24,14 +26,7 @@ export default function HandoffRoute() {
   return (
     <GradientScreen gradient="handoff">
       <View style={styles.center}>
-        <MotiText
-          from={{ opacity: 0, scale: 1.4 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', damping: 10, stiffness: 140 }}
-          style={styles.emoji}
-        >
-          👀
-        </MotiText>
+        <LottieView source={drumroll} autoPlay loop style={styles.lottie} resizeMode="contain" />
 
         <MotiText
           from={{ opacity: 0, translateY: 20 }}
@@ -70,7 +65,7 @@ export default function HandoffRoute() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
-  emoji: { fontSize: 96 },
+  lottie: { width: 200, height: 200 },
   name: { fontFamily: fonts.heading, fontSize: 44, color: '#FFFFFF', textAlign: 'center' },
   subtitle: { fontFamily: fonts.bodySemi, fontSize: 18, color: 'rgba(255,255,255,0.80)' },
   bottom: { paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl'] },
