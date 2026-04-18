@@ -64,7 +64,7 @@ export function useGame() {
               duration_seconds: null,
               seasonal: 'none',
               flagged: false,
-              community_submitted: true,
+              community_submitted: false,
               mood: config.mood,
               props: [],
               relationship_type: [],
