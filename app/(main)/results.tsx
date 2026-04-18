@@ -62,14 +62,15 @@ export default function ResultsRoute() {
 
   return (
     <GradientScreen gradient="results">
-      <LottieView
-        source={confetti}
-        autoPlay
-        loop={false}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
-        resizeMode="cover"
-      />
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <LottieView
+          source={confetti}
+          autoPlay
+          loop={false}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        />
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <MotiView
           from={{ opacity: 0, scale: 0.7 }}
