@@ -101,7 +101,7 @@ export default function ResultsRoute() {
           transition={{ type: 'timing', duration: 400, delay: 600 }}
           style={styles.actions}
         >
-          <GradientButton label="Play Again" onPress={handlePlayAgain} accessibilityLabel="Play again with same setup" />
+          <GradientButton label="Play Again" onPress={handlePlayAgain} accessibilityLabel="Play again with same setup" glow />
           <GradientButton label="Share Results 📤" onPress={handleShare} accessibilityLabel="Share results" />
           <TextButton label="New Game" onPress={() => { reset(); router.replace('/(main)'); }} accessibilityLabel="Start a new game" />
         </MotiView>

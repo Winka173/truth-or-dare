@@ -49,7 +49,7 @@ export default function HomeRoute() {
         transition={{ type: 'spring', damping: 12, stiffness: 180, delay: 400 }}
         style={styles.bottom}
       >
-        <GradientButton label="Play Now 🎉" onPress={() => router.push('/(main)/setup/players')} accessibilityLabel="Start a new game" />
+        <GradientButton label="Play Now 🎉" onPress={() => router.push('/(main)/setup/players')} accessibilityLabel="Start a new game" glow />
         <TextButton label="Browse Packs" onPress={() => router.push('/(main)/settings')} accessibilityLabel="Browse content packs" />
       </MotiView>
     </GradientScreen>
