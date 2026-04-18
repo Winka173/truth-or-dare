@@ -19,6 +19,9 @@ const initial: SettingsState = {
   defaultMood: 'party',
   language: 'en',
   theme: 'system',
+  onboardingComplete: false,
+  ttsEnabled: true,
+  preferredVoiceId: null,
 };
 
 describe('settingsSlice — hydrate', () => {
