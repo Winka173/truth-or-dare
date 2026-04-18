@@ -12,6 +12,7 @@ import { CardShimmer } from '@/components/ui/CardShimmer';
 import { useGame } from '@/hooks/useGame';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useSpeech } from '@/hooks/useSpeech';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useT } from '@/hooks/useT';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setTtsEnabled } from '@/store/slices/settingsSlice';
@@ -26,6 +27,7 @@ export default function PlayRoute() {
   const { session, currentQuestion, currentPlayer, complete, skip, end } = useGame();
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
   const { speak, stop } = useSpeech();
+  const { playWhoosh, playCheer } = useSoundEffects();
   const dispatch = useAppDispatch();
   const ttsEnabled = useAppSelector((s) => s.settings.ttsEnabled);
   const [confirmEndVisible, setConfirmEndVisible] = useState(false);
@@ -58,6 +60,16 @@ export default function PlayRoute() {
       stop();
     };
   }, [currentQuestion, text, speak, stop]);
+
+  useEffect(() => {
+    if (currentQuestion) playWhoosh();
+  }, [currentQuestion, playWhoosh]);
+
+  useEffect(() => {
+    if (currentPlayer && currentPlayer.streak >= 3 && currentPlayer.streak % 3 === 0) {
+      playCheer();
+    }
+  }, [currentPlayer, playCheer]);
 
   if (!session || !currentQuestion || !currentPlayer) {
     return null;

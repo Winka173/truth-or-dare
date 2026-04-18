@@ -8,6 +8,7 @@ import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { useAppSelector } from '@/store/hooks';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { fonts, spacing } from '@/constants/theme';
 import drumroll from '@/assets/lottie/drumroll.json';
 
@@ -16,12 +17,18 @@ export default function HandoffRoute() {
   const session = useAppSelector((s) => s.game.session);
   const currentPlayer = session?.players[session.currentPlayerIndex];
   const reduce = useReduceMotion();
+  const { playDrumroll, stopDrumroll } = useSoundEffects();
 
   useEffect(() => {
     if (!session || !currentPlayer) {
       router.replace('/(main)');
     }
   }, [session, currentPlayer, router]);
+
+  useEffect(() => {
+    playDrumroll();
+    return () => stopDrumroll();
+  }, [playDrumroll, stopDrumroll]);
 
   if (!session || !currentPlayer) return null;
 
