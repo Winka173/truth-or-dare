@@ -35,56 +35,66 @@ export function useGame() {
       : null;
 
   const start = useCallback(
-    (config: GameConfig, players: Player[]) => {
-      const basePool = buildQuestionPool(allQuestions, config, unlockedPacks);
+    (config: GameConfig, players: Player[], poolOverride?: Question[]) => {
       const recentIds = storageApi.loadRecentIds();
 
-      // Convert user-authored custom questions to the Question shape so they
-      // mix into the session pool alongside bundled ones.
-      const customQs: Question[] = customQuestions.map(
-        (cq) =>
-          ({
-            id: cq.id,
-            category_id: 'custom',
-            type: cq.type,
-            age_group: config.ageGroup,
-            text: cq.text,
-            tags: [],
-            sub_tags: [],
-            group_size: 'group',
-            intensity: 3,
-            duration_seconds: null,
-            seasonal: 'none',
-            flagged: false,
-            community_submitted: true,
-            mood: config.mood,
-            props: [],
-            relationship_type: [],
-            chain: false,
-            chain_prompt: null,
-            hot_seat: false,
-            escalation_level: null,
-            screenshot_moment: false,
-            reaction_prompt: null,
-            follow_up_question: '',
-            related_questions: [],
-            bundle_id: null,
-            translations: {},
-            analytics: {
-              times_played: 0,
-              times_skipped: 0,
-              times_completed: 0,
-              avg_reaction: null,
-              skip_rate: null,
-              completion_rate: null,
-            },
-          } as Question),
-      );
+      let mergedPool: Question[];
 
-      const mergedPool = [...basePool, ...customQs];
+      if (poolOverride) {
+        // Bypass filtering and custom-question merge — use caller-supplied pool
+        // as-is (e.g., Favorites viewer plays the starred set directly).
+        mergedPool = poolOverride;
+      } else {
+        const basePool = buildQuestionPool(allQuestions, config, unlockedPacks);
+
+        // Convert user-authored custom questions to the Question shape so they
+        // mix into the session pool alongside bundled ones.
+        const customQs: Question[] = customQuestions.map(
+          (cq) =>
+            ({
+              id: cq.id,
+              category_id: 'custom',
+              type: cq.type,
+              age_group: config.ageGroup,
+              text: cq.text,
+              tags: [],
+              sub_tags: [],
+              group_size: 'group',
+              intensity: 3,
+              duration_seconds: null,
+              seasonal: 'none',
+              flagged: false,
+              community_submitted: true,
+              mood: config.mood,
+              props: [],
+              relationship_type: [],
+              chain: false,
+              chain_prompt: null,
+              hot_seat: false,
+              escalation_level: null,
+              screenshot_moment: false,
+              reaction_prompt: null,
+              follow_up_question: '',
+              related_questions: [],
+              bundle_id: null,
+              translations: {},
+              analytics: {
+                times_played: 0,
+                times_skipped: 0,
+                times_completed: 0,
+                avg_reaction: null,
+                skip_rate: null,
+                completion_rate: null,
+              },
+            } as Question),
+        );
+
+        mergedPool = [...basePool, ...customQs];
+      }
 
       // Escalating series: preserve 1→5 ordering per bundle instead of shuffling
       const isEscalatingOnly =
+        !poolOverride &&
         Array.isArray(config.categoryIds) &&
         config.categoryIds.length === 1 &&
         config.categoryIds[0] === 'escalating_mode';
