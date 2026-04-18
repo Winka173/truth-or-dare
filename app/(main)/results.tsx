@@ -1,4 +1,5 @@
 // app/(main)/results.tsx
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
@@ -18,12 +19,15 @@ function podiumColor(rank: number): string {
 
 export default function ResultsRoute() {
   const router = useRouter();
-  const { session, reset } = useGame();
+  const { session, reset, start } = useGame();
 
-  if (!session) {
-    router.replace('/(main)');
-    return null;
-  }
+  useEffect(() => {
+    if (!session) {
+      router.replace('/(main)');
+    }
+  }, [session, router]);
+
+  if (!session) return null;
 
   const ranked = [...session.players].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
@@ -36,6 +40,22 @@ export default function ResultsRoute() {
     } catch {
       /* user cancelled */
     }
+  }
+
+  function handlePlayAgain() {
+    if (!session) return;
+    const { config, players } = session;
+    const freshPlayers = players.map((p) => ({
+      ...p,
+      score: 0,
+      truthsCompleted: 0,
+      daresCompleted: 0,
+      skips: 0,
+      streak: 0,
+    }));
+    reset();
+    start(config, freshPlayers);
+    router.replace('/(main)/handoff');
   }
 
   return (
@@ -81,7 +101,7 @@ export default function ResultsRoute() {
           transition={{ type: 'timing', duration: 400, delay: 600 }}
           style={styles.actions}
         >
-          <GradientButton label="Play Again" onPress={() => router.replace('/(main)/handoff')} accessibilityLabel="Play again with same setup" />
+          <GradientButton label="Play Again" onPress={handlePlayAgain} accessibilityLabel="Play again with same setup" />
           <GradientButton label="Share Results 📤" onPress={handleShare} accessibilityLabel="Share results" />
           <TextButton label="New Game" onPress={() => { reset(); router.replace('/(main)'); }} accessibilityLabel="Start a new game" />
         </MotiView>

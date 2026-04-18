@@ -1,4 +1,5 @@
 // app/(main)/handoff.tsx
+import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView, MotiText } from 'moti';
@@ -12,10 +13,13 @@ export default function HandoffRoute() {
   const session = useAppSelector((s) => s.game.session);
   const currentPlayer = session?.players[session.currentPlayerIndex];
 
-  if (!session || !currentPlayer) {
-    router.replace('/(main)');
-    return null;
-  }
+  useEffect(() => {
+    if (!session || !currentPlayer) {
+      router.replace('/(main)');
+    }
+  }, [session, currentPlayer, router]);
+
+  if (!session || !currentPlayer) return null;
 
   return (
     <GradientScreen gradient="handoff">
