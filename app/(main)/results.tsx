@@ -3,12 +3,14 @@ import { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
+import LottieView from 'lottie-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { FrostedCard } from '@/components/ui/FrostedCard';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { TextButton } from '@/components/ui/TextButton';
 import { useGame } from '@/hooks/useGame';
 import { fonts, spacing, colors } from '@/constants/theme';
+import confetti from '@/assets/lottie/confetti.json';
 
 function podiumColor(rank: number): string {
   if (rank === 0) return colors.gold;
@@ -60,6 +62,14 @@ export default function ResultsRoute() {
 
   return (
     <GradientScreen gradient="results">
+      <LottieView
+        source={confetti}
+        autoPlay
+        loop={false}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+        resizeMode="cover"
+      />
       <ScrollView contentContainerStyle={styles.content}>
         <MotiView
           from={{ opacity: 0, scale: 0.7 }}
