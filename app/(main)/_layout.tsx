@@ -1,32 +1,18 @@
+// app/(main)/_layout.tsx
 import { Stack } from 'expo-router';
-import { animation, colors } from '@/constants/theme';
 
 export default function MainLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.bg.screen },
-        animation: 'slide_from_right',
-        animationDuration: animation.transition.slide,
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="setup" />
-      <Stack.Screen name="play" options={{ gestureEnabled: false }} />
-      <Stack.Screen
-        name="results"
-        options={{ animation: 'fade', animationDuration: animation.transition.fade }}
-      />
-      <Stack.Screen name="categories" />
-      <Stack.Screen
-        name="settings"
-        options={{
-          animation: 'slide_from_bottom',
-          animationDuration: animation.transition.modal,
-          presentation: 'modal',
-        }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ animation: 'slide_from_right', animationDuration: 280 }} />
+      <Stack.Screen name="setup/players" options={{ animation: 'slide_from_right', animationDuration: 280 }} />
+      <Stack.Screen name="setup/age" options={{ animation: 'slide_from_right', animationDuration: 280 }} />
+      <Stack.Screen name="setup/vibe" options={{ animation: 'slide_from_right', animationDuration: 280 }} />
+      <Stack.Screen name="handoff" options={{ animation: 'slide_from_right', animationDuration: 280, gestureEnabled: false }} />
+      <Stack.Screen name="play" options={{ animation: 'fade', animationDuration: 220, gestureEnabled: false }} />
+      <Stack.Screen name="results" options={{ animation: 'fade', animationDuration: 220, gestureEnabled: false }} />
+      <Stack.Screen name="settings" options={{ animation: 'slide_from_bottom', animationDuration: 340, presentation: 'modal' }} />
+      <Stack.Screen name="favorites" options={{ animation: 'slide_from_right', animationDuration: 280 }} />
     </Stack>
   );
 }
