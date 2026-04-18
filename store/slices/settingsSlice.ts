@@ -1,4 +1,3 @@
-// store/slices/settingsSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { GAME_CONFIG } from '@/constants/config';
 import type { AgeGroup, LanguageCode, Mood } from '@/types/question';
@@ -33,6 +32,7 @@ export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
+    /** Apply a partial settings object loaded from MMKV at app boot. */
     hydrate(state, action: PayloadAction<Partial<SettingsState>>) {
       Object.assign(state, action.payload);
     },

@@ -1,5 +1,4 @@
 import settingsReducer, {
-  settingsSlice,
   hydrate,
   setDefaultAgeGroup,
   setDefaultMood,
@@ -90,32 +89,32 @@ describe('settingsSlice — composability', () => {
 
 describe('new settings fields', () => {
   it('initialises onboardingComplete to false', () => {
-    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    const state = settingsReducer(undefined, { type: '@@INIT' });
     expect(state.onboardingComplete).toBe(false);
   });
 
   it('initialises ttsEnabled to true', () => {
-    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    const state = settingsReducer(undefined, { type: '@@INIT' });
     expect(state.ttsEnabled).toBe(true);
   });
 
   it('initialises preferredVoiceId to null', () => {
-    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    const state = settingsReducer(undefined, { type: '@@INIT' });
     expect(state.preferredVoiceId).toBeNull();
   });
 
   it('setOnboardingComplete sets the flag', () => {
-    const state = settingsSlice.reducer(undefined, setOnboardingComplete(true));
+    const state = settingsReducer(undefined, setOnboardingComplete(true));
     expect(state.onboardingComplete).toBe(true);
   });
 
   it('setTtsEnabled sets the flag', () => {
-    const state = settingsSlice.reducer(undefined, setTtsEnabled(false));
+    const state = settingsReducer(undefined, setTtsEnabled(false));
     expect(state.ttsEnabled).toBe(false);
   });
 
   it('setPreferredVoiceId stores the id', () => {
-    const state = settingsSlice.reducer(
+    const state = settingsReducer(
       undefined,
       setPreferredVoiceId('com.apple.voice.compact.en-US.Samantha'),
     );
@@ -123,7 +122,7 @@ describe('new settings fields', () => {
   });
 
   it('hydrate merges new fields', () => {
-    const state = settingsSlice.reducer(
+    const state = settingsReducer(
       undefined,
       hydrate({ onboardingComplete: true, ttsEnabled: false, preferredVoiceId: 'voice-1' }),
     );
