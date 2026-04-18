@@ -1,433 +1,168 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  BackHandler,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { router } from 'expo-router';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
-import { Check, RotateCcw, Undo2, X } from 'lucide-react-native';
-import { Button } from '@/components/ui/Button';
+import { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, BackHandler } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { MotiView } from 'moti';
+import { Star } from 'lucide-react-native';
+import { GradientScreen } from '@/components/ui/GradientScreen';
+import { FrostedCard } from '@/components/ui/FrostedCard';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { TextButton } from '@/components/ui/TextButton';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { PlayerBadge } from '@/components/game/PlayerBadge';
-import { TimerRing } from '@/components/game/TimerRing';
-import { StreakBadge } from '@/components/game/StreakBadge';
-import { QuestionCard } from '@/components/game/QuestionCard';
 import { useGame } from '@/hooks/useGame';
-import { useSettings } from '@/hooks/useSettings';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useT } from '@/hooks/useT';
 import { useAppSelector } from '@/store/hooks';
-import { applyChainPrompt, getTranslatedText } from '@/utils/questionFilter';
-import { colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
+import { getTranslatedText } from '@/utils/questionFilter';
+import { fonts, spacing, colors } from '@/constants/theme';
+import type { LanguageCode } from '@/types/question';
 
-export default function PlayScreen() {
-  const { session, currentQuestion, currentPlayer, history, complete, skip, next, end, undo } =
-    useGame();
-  const { settings } = useSettings();
-  const allQuestions = useAppSelector((s) => s.game.allQuestions);
-  const [flipped, setFlipped] = useState(false);
-  const [showEndConfirm, setShowEndConfirm] = useState(false);
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  // Chain prompt from the previous player, shown to current player before flip
-  const [pendingChain, setPendingChain] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const questionId = currentQuestion?.id;
-  const configTimer = session?.config.timer ?? 0;
-  // Hot seat questions override the session timer with their own duration
-  const effectiveTimer =
-    currentQuestion?.hot_seat && currentQuestion.duration_seconds
-      ? currentQuestion.duration_seconds
-      : configTimer;
+export default function PlayRoute() {
+  const router = useRouter();
+  const t = useT();
+  const language = useAppSelector((s) => s.settings.language) as LanguageCode;
+  const { session, currentQuestion, currentPlayer, complete, skip, end } = useGame();
+  const { isFavorite, toggle: toggleFavorite } = useFavorites();
+  const [confirmEndVisible, setConfirmEndVisible] = useState(false);
 
-  // Resolve the bonus related question text (PRD §5.7) — first related_questions ID
-  const bonusRelatedText = useMemo(() => {
-    if (!currentQuestion || currentQuestion.related_questions.length === 0) return null;
-    const relatedId = currentQuestion.related_questions[0];
-    if (!relatedId) return null;
-    const related = allQuestions.find((q) => q.id === relatedId);
-    if (!related) return null;
-    return getTranslatedText(related, settings.language);
-  }, [currentQuestion, allQuestions, settings.language]);
-
-  useEffect(() => {
-    if (!session) {
-      router.replace('/');
-    }
-  }, [session]);
-
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      setShowEndConfirm(true);
-      return true;
-    });
-    return () => sub.remove();
-  }, []);
-
-  useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (!flipped || effectiveTimer === 0) {
-      setTimeLeft(null);
-      return;
-    }
-    setTimeLeft(effectiveTimer);
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev === null || prev <= 0) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prev - 1;
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        setConfirmEndVisible(true);
+        return true;
       });
-    }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [flipped, effectiveTimer, questionId]);
+      return () => sub.remove();
+    }, []),
+  );
+
+  const hasActive = !!(session && currentQuestion && currentPlayer);
 
   useEffect(() => {
-    if (!settings.hapticEnabled || timeLeft === null) return;
-    if (timeLeft === 10) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {
-        /* ignore */
-      });
-    } else if (timeLeft === 3) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {
-        /* ignore */
-      });
+    if (!hasActive) {
+      router.replace('/(main)');
     }
-  }, [timeLeft, settings.hapticEnabled]);
+  }, [hasActive, router]);
 
-  if (!session || !currentPlayer) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <EmptyState title="No active game" />
-      </SafeAreaView>
-    );
+  if (!session || !currentQuestion || !currentPlayer) {
+    return null;
   }
 
-  const totalQuestions =
-    session.config.questionsPerRound === 'unlimited'
-      ? session.questionPool.length
-      : Math.min(session.config.questionsPerRound, session.questionPool.length);
+  const text = getTranslatedText(currentQuestion, language);
+  const starred = isFavorite(currentQuestion.id);
+  const isLast = session.currentQuestionIndex >= session.questionPool.length - 1;
 
-  if (!currentQuestion || session.currentQuestionIndex >= totalQuestions) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <EmptyState
-          title="No more questions"
-          subtitle="The pool for these settings is exhausted."
-          actionLabel="See results"
-          onAction={() => {
-            end();
-            router.replace('/results');
-          }}
-        />
-      </SafeAreaView>
-    );
-  }
-
-  const isLastQuestion = session.currentQuestionIndex >= totalQuestions - 1;
-
-  const advance = () => {
-    // Capture chain prompt for next player BEFORE we advance (PRD §5.3 interpretation 1)
-    if (
-      currentQuestion.chain &&
-      currentQuestion.chain_prompt &&
-      !isLastQuestion
-    ) {
-      setPendingChain(applyChainPrompt(currentQuestion.chain_prompt, currentPlayer.name));
-    }
-    if (isLastQuestion) {
+  function handleComplete() {
+    complete(currentQuestion!.type);
+    if (isLast) {
       end();
-      router.replace('/results');
+      router.replace('/(main)/results');
     } else {
-      next();
-      setFlipped(false);
+      router.replace('/(main)/handoff');
     }
-  };
+  }
 
-  const handleComplete = () => {
-    complete(currentQuestion.type);
-    advance();
-  };
-
-  const handleSkip = () => {
+  function handleSkip() {
     skip();
-    advance();
-  };
+    if (isLast) {
+      end();
+      router.replace('/(main)/results');
+    } else {
+      router.replace('/(main)/handoff');
+    }
+  }
 
-  const handleEnd = () => {
-    setShowEndConfirm(false);
+  function handleEnd() {
     end();
-    router.replace('/results');
-  };
-
-  const handleUndo = () => {
-    if (history.length === 0) return;
-    undo();
-    setFlipped(true);
-    setPendingChain(null);
-  };
-
-  const progress = (session.currentQuestionIndex + 1) / totalQuestions;
+    setConfirmEndVisible(false);
+    router.replace('/(main)/results');
+  }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <PlayerBadge
-          key={currentPlayer.id}
-          name={currentPlayer.name}
-          index={session.currentPlayerIndex}
-          active
-        />
-        <Pressable
-          onPress={() => setShowEndConfirm(true)}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="End game"
-          style={styles.iconButton}
-        >
-          <X size={22} color={colors.text.primary} />
+    <GradientScreen gradient="play">
+      <View style={styles.topBar}>
+        <Text style={styles.player}>{currentPlayer.name}</Text>
+        <Text style={styles.counter}>
+          {session.currentQuestionIndex + 1} / {session.questionPool.length}
+        </Text>
+        <Pressable onPress={() => setConfirmEndVisible(true)} hitSlop={16} accessibilityLabel="End game">
+          <Text style={styles.end}>End</Text>
         </Pressable>
       </View>
 
-      <View style={styles.progressWrap}>
-        <View style={[styles.progressBar, { width: `${Math.round(progress * 100)}%` }]} />
-      </View>
-
-      {!flipped && history.length > 0 ? (
-        <Pressable
-          onPress={handleUndo}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Undo last answer"
-          style={styles.undoButton}
+      <View style={styles.center}>
+        <MotiView
+          from={{ opacity: 0, translateY: 60, scale: 0.9 }}
+          animate={{ opacity: 1, translateY: 0, scale: 1 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 150 }}
+          style={{ width: '100%' }}
         >
-          <Undo2 size={14} color={colors.text.secondary} />
-          <Text style={styles.undoText}>Undo last answer</Text>
-        </Pressable>
-      ) : null}
-
-      {!flipped && pendingChain ? (
-        <Animated.View
-          key={`chain-${currentQuestion.id}`}
-          entering={FadeInDown}
-          style={styles.chainBanner}
-        >
-          <Text style={styles.chainBannerLabel}>Chain</Text>
-          <Text style={styles.chainBannerText}>{pendingChain}</Text>
-        </Animated.View>
-      ) : null}
-
-      {!flipped && currentQuestion.props.length > 0 ? (
-        <Animated.View
-          key={`props-${currentQuestion.id}`}
-          entering={FadeInDown.delay(100)}
-          style={styles.propsBadge}
-        >
-          <Text style={styles.propsBadgeLabel}>Grab</Text>
-          <Text style={styles.propsBadgeText}>{currentQuestion.props.join(' · ')}</Text>
-        </Animated.View>
-      ) : null}
-
-      <View style={styles.cardWrap}>
-        <QuestionCard
-          key={currentQuestion.id}
-          question={currentQuestion}
-          playerName={currentPlayer.name}
-          language={settings.language}
-          hapticEnabled={settings.hapticEnabled}
-          onFlip={() => {
-            setFlipped(true);
-            setPendingChain(null);
-          }}
-        />
+          <FrostedCard style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text
+                style={[
+                  styles.typeLabel,
+                  { color: currentQuestion.type === 'truth' ? colors.truth : colors.dare },
+                ]}
+              >
+                {currentQuestion.type === 'truth' ? t('play.truth') : t('play.dare')}
+              </Text>
+              <Pressable
+                onPress={() => toggleFavorite(currentQuestion.id)}
+                hitSlop={16}
+                accessibilityLabel={starred ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <Star
+                  size={22}
+                  color={starred ? colors.gold : 'rgba(255,255,255,0.60)'}
+                  fill={starred ? colors.gold : 'transparent'}
+                />
+              </Pressable>
+            </View>
+            <Text style={styles.questionText}>{text}</Text>
+            {currentQuestion.follow_up_question ? (
+              <Text style={styles.followUp}>{currentQuestion.follow_up_question}</Text>
+            ) : null}
+          </FrostedCard>
+        </MotiView>
       </View>
 
       <View style={styles.bottom}>
-        <StreakBadge streak={currentPlayer.streak} />
-
-        {flipped && timeLeft !== null ? (
-          <View style={styles.timerWrap}>
-            <TimerRing seconds={timeLeft} total={effectiveTimer} size={92} strokeWidth={6} />
-          </View>
-        ) : null}
-
-        {flipped ? (
-          <Animated.View entering={FadeIn.delay(150)} style={styles.actions}>
-            {session.config.allowSkips ? (
-              <View style={styles.actionHalf}>
-                <Button
-                  label="Skip"
-                  variant="secondary"
-                  fullWidth
-                  icon={<RotateCcw size={18} color={colors.primary.default} />}
-                  onPress={handleSkip}
-                  accessibilityLabel="Skip this question"
-                />
-              </View>
-            ) : null}
-            <View style={styles.actionHalf}>
-              <Button
-                label="Done"
-                variant="primary"
-                fullWidth
-                icon={<Check size={18} color={colors.primary.onPrimary} />}
-                onPress={handleComplete}
-                accessibilityLabel="Mark done"
-              />
-            </View>
-          </Animated.View>
-        ) : null}
-
-        {flipped && bonusRelatedText ? (
-          <Animated.View entering={FadeIn.delay(300)} style={styles.bonusWrap}>
-            <Text style={styles.bonusLabel}>Bonus prompt</Text>
-            <Text style={styles.bonusText}>{bonusRelatedText}</Text>
-          </Animated.View>
+        <GradientButton
+          label={`${t('common.done')} \u2705`}
+          onPress={handleComplete}
+          accessibilityLabel="Mark question as completed"
+        />
+        {session.config.allowSkips ? (
+          <TextButton
+            label={`${t('common.skip')} \uD83D\uDE05`}
+            onPress={handleSkip}
+            accessibilityLabel="Skip this question"
+          />
         ) : null}
       </View>
 
       <ConfirmSheet
-        visible={showEndConfirm}
+        visible={confirmEndVisible}
         title="End this game?"
-        message="Scores will be saved for the results screen."
-        confirmLabel="End Game"
-        destructive
+        message="You'll see results based on the questions played so far."
+        confirmLabel="End game"
+        cancelLabel="Keep playing"
         onConfirm={handleEnd}
-        onCancel={() => setShowEndConfirm(false)}
+        onCancel={() => setConfirmEndVisible(false)}
       />
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg.screen },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  iconButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  progressWrap: {
-    height: 3,
-    backgroundColor: colors.bg.containerHighest,
-    marginHorizontal: spacing.lg,
-    borderRadius: radius.full,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: 3,
-    backgroundColor: colors.primary.default,
-  },
-  cardWrap: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-    justifyContent: 'center',
-  },
-  bottom: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
-    alignItems: 'center',
-  },
-  timerWrap: {
-    marginTop: spacing.sm,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignSelf: 'stretch',
-    gap: spacing.sm,
-  },
-  actionHalf: { flex: 1 },
-  chainBanner: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.bg.containerHighest,
-    borderRadius: radius.lg,
-    gap: 2,
-  },
-  chainBannerLabel: {
-    fontFamily: fonts.mono,
-    fontSize: fontSize.xs,
-    color: colors.tertiary.default,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  chainBannerText: {
-    fontFamily: fonts.bodyMed,
-    fontSize: fontSize.sm,
-    color: colors.text.primary,
-  },
-  propsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    alignSelf: 'center',
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    backgroundColor: colors.primary.container,
-    borderRadius: radius.full,
-  },
-  propsBadgeLabel: {
-    fontFamily: fonts.mono,
-    fontSize: fontSize.xs,
-    color: colors.primary.onPrimary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  propsBadgeText: {
-    fontFamily: fonts.bodySemi,
-    fontSize: fontSize.sm,
-    color: colors.primary.onPrimary,
-  },
-  undoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'center',
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    borderRadius: radius.full,
-    backgroundColor: colors.bg.containerHigh,
-  },
-  undoText: {
-    fontFamily: fonts.bodyMed,
-    fontSize: fontSize.xs,
-    color: colors.text.secondary,
-    letterSpacing: 0.3,
-  },
-  bonusWrap: {
-    alignSelf: 'stretch',
-    padding: spacing.md,
-    backgroundColor: colors.bg.containerHighest,
-    borderRadius: radius.lg,
-    gap: 2,
-    marginTop: spacing.sm,
-  },
-  bonusLabel: {
-    fontFamily: fonts.mono,
-    fontSize: fontSize.xs,
-    color: colors.tertiary.default,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  bonusText: {
-    fontFamily: fonts.body,
-    fontSize: fontSize.sm,
-    color: colors.text.primary,
-    lineHeight: fontSize.sm * 1.4,
-  },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  player: { fontFamily: fonts.bodyBold, fontSize: 16, color: '#FFFFFF' },
+  counter: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.70)' },
+  end: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.error },
+  center: { flex: 1, paddingHorizontal: spacing.lg, justifyContent: 'center' },
+  card: { padding: spacing.xl, gap: spacing.lg, minHeight: 280 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  typeLabel: { fontFamily: fonts.heading, fontSize: 24, letterSpacing: 2 },
+  questionText: { fontFamily: fonts.bodyBold, fontSize: 22, color: '#FFFFFF', lineHeight: 30 },
+  followUp: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.70)' },
+  bottom: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.md },
 });
