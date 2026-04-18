@@ -1,18 +1,34 @@
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
+import * as Speech from 'expo-speech';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { TextButton } from '@/components/ui/TextButton';
+import { VoicePickerSheet } from '@/components/ui/VoicePickerSheet';
 import { useSettings } from '@/hooks/useSettings';
 import { usePacks } from '@/hooks/usePacks';
+import { useT } from '@/hooks/useT';
+import { useAppSelector } from '@/store/hooks';
 import { APP_VERSION } from '@/constants/config';
 import { fonts, spacing } from '@/constants/theme';
+import type { LanguageCode } from '@/types/question';
 
 export default function SettingsRoute() {
   const router = useRouter();
   const { settings, toggleSound, toggleHaptic } = useSettings();
   const { devRestore } = usePacks();
   const { soundEnabled, hapticEnabled } = settings;
+  const t = useT();
+  const language = useAppSelector((s) => s.settings.language) as LanguageCode;
+  const [voiceCount, setVoiceCount] = useState(0);
+  const [voiceSheetOpen, setVoiceSheetOpen] = useState(false);
+
+  useEffect(() => {
+    Speech.getAvailableVoicesAsync().then((vs) => {
+      setVoiceCount(vs.filter((v) => v.language?.toLowerCase().startsWith(language)).length);
+    });
+  }, [language]);
 
   return (
     <GradientScreen gradient="home">
@@ -37,10 +53,17 @@ export default function SettingsRoute() {
           <Text style={styles.rowLabel}>Saved Questions →</Text>
         </Pressable>
 
+        {voiceCount > 1 ? (
+          <Pressable onPress={() => setVoiceSheetOpen(true)} style={styles.linkRow} accessibilityRole="button">
+            <Text style={styles.rowLabel}>{t('settings.voice')} →</Text>
+          </Pressable>
+        ) : null}
+
         <View style={styles.spacer} />
         <TextButton label="Restore Purchases" onPress={() => devRestore([])} accessibilityLabel="Restore past purchases" />
         <Text style={styles.version}>v{APP_VERSION}</Text>
       </ScrollView>
+      <VoicePickerSheet visible={voiceSheetOpen} onClose={() => setVoiceSheetOpen(false)} />
     </GradientScreen>
   );
 }
