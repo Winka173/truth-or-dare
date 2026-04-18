@@ -1,4 +1,5 @@
 // app/(main)/setup/vibe.tsx
+import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MotiView } from 'moti';
@@ -7,6 +8,8 @@ import { ArrowLeft, Lock } from 'lucide-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { TextButton } from '@/components/ui/TextButton';
+import { CustomQuestionSheet } from '@/components/ui/CustomQuestionSheet';
 import { useSetupWizard, wizardActions } from '@/hooks/useSetupWizard';
 import { useGame } from '@/hooks/useGame';
 import { usePacks } from '@/hooks/usePacks';
@@ -70,6 +73,7 @@ export default function VibeRoute() {
   const { playerNames, ageGroup, mood, categoryIds } = useSetupWizard();
   const { start } = useGame();
   const { unlockedPackIds } = usePacks();
+  const [customOpen, setCustomOpen] = useState(false);
 
   function handleStart() {
     if (!ageGroup || !mood) return;
@@ -159,6 +163,13 @@ export default function VibeRoute() {
             );
           })}
         </View>
+
+        <TextButton
+          label="Add your own question +"
+          onPress={() => setCustomOpen(true)}
+          accessibilityLabel="Add a custom question"
+          style={{ marginTop: spacing.lg }}
+        />
       </ScrollView>
 
       <View style={styles.bottom}>
@@ -169,6 +180,8 @@ export default function VibeRoute() {
           accessibilityLabel="Start the game"
         />
       </View>
+
+      <CustomQuestionSheet visible={customOpen} onClose={() => setCustomOpen(false)} />
     </GradientScreen>
   );
 }

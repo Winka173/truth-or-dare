@@ -14,7 +14,7 @@ import { buildQuestionPool } from '@/utils/questionFilter';
 import { prepareEscalatingPool, preparePool, pushRecentId } from '@/utils/shuffle';
 import { storageApi } from '@/utils/storage';
 import type { GameConfig, Player } from '@/types/game';
-import type { QuestionType } from '@/types/question';
+import type { Question, QuestionType } from '@/types/question';
 
 export function useGame() {
   const dispatch = useAppDispatch();
@@ -22,6 +22,7 @@ export function useGame() {
   const isActive = useAppSelector((s) => s.game.isActive);
   const history = useAppSelector((s) => s.game.history);
   const allQuestions = useAppSelector((s) => s.game.allQuestions);
+  const customQuestions = useAppSelector((s) => s.game.customQuestions);
   const unlockedPacks = useAppSelector((s) => s.packs.unlockedPackIds);
 
   const currentQuestion =
@@ -35,8 +36,52 @@ export function useGame() {
 
   const start = useCallback(
     (config: GameConfig, players: Player[]) => {
-      const pool = buildQuestionPool(allQuestions, config, unlockedPacks);
+      const basePool = buildQuestionPool(allQuestions, config, unlockedPacks);
       const recentIds = storageApi.loadRecentIds();
+
+      // Convert user-authored custom questions to the Question shape so they
+      // mix into the session pool alongside bundled ones.
+      const customQs: Question[] = customQuestions.map(
+        (cq) =>
+          ({
+            id: cq.id,
+            category_id: 'custom',
+            type: cq.type,
+            age_group: config.ageGroup,
+            text: cq.text,
+            tags: [],
+            sub_tags: [],
+            group_size: 'group',
+            intensity: 3,
+            duration_seconds: null,
+            seasonal: 'none',
+            flagged: false,
+            community_submitted: true,
+            mood: config.mood,
+            props: [],
+            relationship_type: [],
+            chain: false,
+            chain_prompt: null,
+            hot_seat: false,
+            escalation_level: null,
+            screenshot_moment: false,
+            reaction_prompt: null,
+            follow_up_question: '',
+            related_questions: [],
+            bundle_id: null,
+            translations: {},
+            analytics: {
+              times_played: 0,
+              times_skipped: 0,
+              times_completed: 0,
+              avg_reaction: null,
+              skip_rate: null,
+              completion_rate: null,
+            },
+          } as Question),
+      );
+
+      const mergedPool = [...basePool, ...customQs];
 
       // Escalating series: preserve 1→5 ordering per bundle instead of shuffling
       const isEscalatingOnly =
@@ -45,15 +90,15 @@ export function useGame() {
         config.categoryIds[0] === 'escalating_mode';
 
       const ordered = isEscalatingOnly
-        ? prepareEscalatingPool(pool)
-        : preparePool(pool, recentIds);
+        ? prepareEscalatingPool(mergedPool)
+        : preparePool(mergedPool, recentIds);
 
       dispatch(startGame({ config, players, questionPool: ordered }));
 
       storageApi.saveLastConfig(config);
       storageApi.saveLastPlayers(players.map((p) => p.name));
     },
-    [dispatch, allQuestions, unlockedPacks],
+    [dispatch, allQuestions, customQuestions, unlockedPacks],
   );
 
   const complete = useCallback(
