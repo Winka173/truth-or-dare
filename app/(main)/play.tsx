@@ -8,6 +8,7 @@ import { FrostedCard } from '@/components/ui/FrostedCard';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { TextButton } from '@/components/ui/TextButton';
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
+import { CardShimmer } from '@/components/ui/CardShimmer';
 import { useGame } from '@/hooks/useGame';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useT } from '@/hooks/useT';
@@ -96,6 +97,7 @@ export default function PlayRoute() {
           style={{ width: '100%' }}
         >
           <FrostedCard style={styles.card}>
+            <CardShimmer />
             <View style={styles.cardHeader}>
               <Text
                 style={[
