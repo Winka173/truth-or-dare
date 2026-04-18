@@ -9,6 +9,7 @@ import { FrostedCard } from '@/components/ui/FrostedCard';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { TextButton } from '@/components/ui/TextButton';
 import { useGame } from '@/hooks/useGame';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { fonts, spacing, colors } from '@/constants/theme';
 import confetti from '@/assets/lottie/confetti.json';
 
@@ -22,6 +23,7 @@ function podiumColor(rank: number): string {
 export default function ResultsRoute() {
   const router = useRouter();
   const { session, reset, start } = useGame();
+  const reduce = useReduceMotion();
 
   useEffect(() => {
     if (!session) {
@@ -63,13 +65,15 @@ export default function ResultsRoute() {
   return (
     <GradientScreen gradient="results">
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <LottieView
-          source={confetti}
-          autoPlay
-          loop={false}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-        />
+        {!reduce ? (
+          <LottieView
+            source={confetti}
+            autoPlay
+            loop={false}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+        ) : null}
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <MotiView

@@ -7,6 +7,7 @@ import LottieView from 'lottie-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { useAppSelector } from '@/store/hooks';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { fonts, spacing } from '@/constants/theme';
 import drumroll from '@/assets/lottie/drumroll.json';
 
@@ -14,6 +15,7 @@ export default function HandoffRoute() {
   const router = useRouter();
   const session = useAppSelector((s) => s.game.session);
   const currentPlayer = session?.players[session.currentPlayerIndex];
+  const reduce = useReduceMotion();
 
   useEffect(() => {
     if (!session || !currentPlayer) {
@@ -26,7 +28,7 @@ export default function HandoffRoute() {
   return (
     <GradientScreen gradient="handoff">
       <View style={styles.center}>
-        <LottieView source={drumroll} autoPlay loop style={styles.lottie} resizeMode="contain" />
+        <LottieView source={drumroll} autoPlay loop={!reduce} style={styles.lottie} resizeMode="contain" />
 
         <MotiText
           from={{ opacity: 0, translateY: 20 }}

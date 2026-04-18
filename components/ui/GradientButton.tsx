@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { fonts, spacing, radius, animation } from '@/constants/theme';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -31,16 +32,17 @@ export function GradientButton({
 }: GradientButtonProps) {
   const scale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.4);
+  const reduce = useReduceMotion();
 
   useEffect(() => {
-    if (glow) {
+    if (glow && !reduce) {
       glowOpacity.value = withRepeat(withTiming(0.8, { duration: 1000 }), -1, true);
     }
-  }, [glow, glowOpacity]);
+  }, [glow, reduce, glowOpacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    shadowOpacity: glow ? glowOpacity.value : 0,
+    shadowOpacity: glow && !reduce ? glowOpacity.value : (glow ? 0.6 : 0),
   }));
 
   return (
