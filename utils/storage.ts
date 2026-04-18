@@ -37,7 +37,10 @@ function setJSON(key: string, value: unknown): void {
 
 export const storageApi = {
   loadSettings: (): Partial<SettingsState> | null => getJSON<Partial<SettingsState>>(KEYS.settings),
-  saveSettings: (s: SettingsState): void => setJSON(KEYS.settings, s),
+  saveSettings: (s: Partial<SettingsState>): void => {
+    const prev = getJSON<Partial<SettingsState>>(KEYS.settings) ?? {};
+    setJSON(KEYS.settings, { ...prev, ...s });
+  },
   loadUnlockedPacks: (): PackId[] => getJSON<PackId[]>(KEYS.unlockedPacks) ?? [],
   saveUnlockedPacks: (packs: readonly PackId[]): void => setJSON(KEYS.unlockedPacks, packs),
   loadRecentIds: (): string[] => getJSON<string[]>(KEYS.recentQuestionIds) ?? [],
