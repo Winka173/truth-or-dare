@@ -77,7 +77,11 @@ export default function RootLayout() {
       <Provider store={store}>
         <ToastProvider>
           <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }} initialRouteName="splash">
+            <Stack.Screen name="splash" options={{ animation: 'fade' }} />
+            <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+            <Stack.Screen name="(main)" options={{ animation: 'fade' }} />
+          </Stack>
         </ToastProvider>
       </Provider>
     </ErrorBoundary>
