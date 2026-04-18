@@ -1,3 +1,4 @@
+// app/_layout.tsx
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { I18nManager } from 'react-native';
@@ -6,17 +7,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { Provider } from 'react-redux';
 import { isRTL } from '@/locales';
+import { Baloo2_800ExtraBold } from '@expo-google-fonts/baloo-2';
 import {
-  PlayfairDisplay_700Bold,
-  PlayfairDisplay_700Bold_Italic,
-} from '@expo-google-fonts/playfair-display';
-import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_600SemiBold,
-  DMSans_700Bold,
-} from '@expo-google-fonts/dm-sans';
-import { DMMono_400Regular } from '@expo-google-fonts/dm-mono';
+  Outfit_400Regular,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+} from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
 import { store } from '@/store';
 import { loadQuestions } from '@/store/slices/gameSlice';
@@ -27,15 +23,12 @@ import { safeFlattenQuestions } from '@/utils/questionLoader';
 import { storageApi } from '@/utils/storage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { ToastProvider } from '@/components/ui/Toast';
-import { colors } from '@/constants/theme';
 import questionsData from '@/data/questions.json';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* ignore — may already be hidden */
 });
 
-// Boot once at module load: parse questions, hydrate persisted state.
-// Runs before React renders anything because it's outside the component.
 (function boot() {
   try {
     const flattened = safeFlattenQuestions(questionsData);
@@ -50,10 +43,6 @@ SplashScreen.preventAutoHideAsync().catch(() => {
     const savedFavorites = storageApi.loadFavoriteIds();
     if (savedFavorites.length > 0) store.dispatch(hydrateFavorites(savedFavorites));
 
-    // Sync RTL with the persisted locale. Note: I18nManager.forceRTL takes
-    // effect on the NEXT app launch on native platforms — so a user
-    // switching to/from Arabic must restart once. This boot-time check
-    // makes sure the layout matches on every subsequent launch.
     const lang = store.getState().settings.language;
     const wantsRTL = isRTL(lang);
     if (wantsRTL !== I18nManager.isRTL) {
@@ -67,13 +56,10 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    PlayfairDisplay_700Bold,
-    PlayfairDisplay_700Bold_Italic,
-    DMSans_400Regular,
-    DMSans_500Medium,
-    DMSans_600SemiBold,
-    DMSans_700Bold,
-    DMMono_400Regular,
+    Baloo2_800ExtraBold,
+    Outfit_400Regular,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
   });
 
   useEffect(() => {
@@ -91,12 +77,7 @@ export default function RootLayout() {
       <Provider store={store}>
         <ToastProvider>
           <StatusBar style="light" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.bg.screen },
-            }}
-          />
+          <Stack screenOptions={{ headerShown: false }} />
         </ToastProvider>
       </Provider>
     </ErrorBoundary>
