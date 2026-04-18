@@ -99,14 +99,25 @@ export default function PlayRoute() {
           <FrostedCard style={styles.card}>
             <CardShimmer />
             <View style={styles.cardHeader}>
-              <Text
-                style={[
-                  styles.typeLabel,
-                  { color: currentQuestion.type === 'truth' ? colors.truth : colors.dare },
-                ]}
+              <MotiView
+                from={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  type: 'spring',
+                  damping: currentQuestion.type === 'dare' ? 8 : 14,
+                  stiffness: 180,
+                  delay: 200,
+                }}
               >
-                {currentQuestion.type === 'truth' ? t('play.truth') : t('play.dare')}
-              </Text>
+                <Text
+                  style={[
+                    styles.typeLabel,
+                    { color: currentQuestion.type === 'truth' ? colors.truth : colors.dare },
+                  ]}
+                >
+                  {currentQuestion.type === 'truth' ? t('play.truth') : t('play.dare')}
+                </Text>
+              </MotiView>
               <Pressable
                 onPress={() => toggleFavorite(currentQuestion.id)}
                 hitSlop={16}
