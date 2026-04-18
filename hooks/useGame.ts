@@ -9,6 +9,7 @@ import {
   startGame,
   undoLastTurn,
 } from '@/store/slices/gameSlice';
+import { setTtsEnabled } from '@/store/slices/settingsSlice';
 import { buildQuestionPool } from '@/utils/questionFilter';
 import { prepareEscalatingPool, preparePool, pushRecentId } from '@/utils/shuffle';
 import { storageApi } from '@/utils/storage';
@@ -76,7 +77,10 @@ export function useGame() {
 
   const next = useCallback(() => dispatch(nextQuestion()), [dispatch]);
   const end = useCallback(() => dispatch(endGame()), [dispatch]);
-  const reset = useCallback(() => dispatch(resetGame()), [dispatch]);
+  const reset = useCallback(() => {
+    dispatch(resetGame());
+    dispatch(setTtsEnabled(true));
+  }, [dispatch]);
   const undo = useCallback(() => dispatch(undoLastTurn()), [dispatch]);
 
   return {

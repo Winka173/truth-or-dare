@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, BackHandler } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { MotiView, AnimatePresence } from 'moti';
-import { Star } from 'lucide-react-native';
+import { Star, Volume2, VolumeX } from 'lucide-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { FrostedCard } from '@/components/ui/FrostedCard';
 import { GradientButton } from '@/components/ui/GradientButton';
@@ -11,8 +11,10 @@ import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { CardShimmer } from '@/components/ui/CardShimmer';
 import { useGame } from '@/hooks/useGame';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useSpeech } from '@/hooks/useSpeech';
 import { useT } from '@/hooks/useT';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setTtsEnabled } from '@/store/slices/settingsSlice';
 import { getTranslatedText } from '@/utils/questionFilter';
 import { fonts, spacing, colors } from '@/constants/theme';
 import type { LanguageCode } from '@/types/question';
@@ -23,6 +25,9 @@ export default function PlayRoute() {
   const language = useAppSelector((s) => s.settings.language) as LanguageCode;
   const { session, currentQuestion, currentPlayer, complete, skip, end } = useGame();
   const { isFavorite, toggle: toggleFavorite } = useFavorites();
+  const { speak, stop } = useSpeech();
+  const dispatch = useAppDispatch();
+  const ttsEnabled = useAppSelector((s) => s.settings.ttsEnabled);
   const [confirmEndVisible, setConfirmEndVisible] = useState(false);
 
   useFocusEffect(
@@ -43,11 +48,20 @@ export default function PlayRoute() {
     }
   }, [hasActive, router]);
 
+  const text = currentQuestion ? getTranslatedText(currentQuestion, language) : '';
+
+  useEffect(() => {
+    if (!currentQuestion) return;
+    const timeoutId = setTimeout(() => speak(text), 400);
+    return () => {
+      clearTimeout(timeoutId);
+      stop();
+    };
+  }, [currentQuestion, text, speak, stop]);
+
   if (!session || !currentQuestion || !currentPlayer) {
     return null;
   }
-
-  const text = getTranslatedText(currentQuestion, language);
   const starred = isFavorite(currentQuestion.id);
   const isLast = session.currentQuestionIndex >= session.questionPool.length - 1;
 
@@ -121,17 +135,35 @@ export default function PlayRoute() {
                   {currentQuestion.type === 'truth' ? t('play.truth') : t('play.dare')}
                 </Text>
               </MotiView>
-              <Pressable
-                onPress={() => toggleFavorite(currentQuestion.id)}
-                hitSlop={16}
-                accessibilityLabel={starred ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                <Star
-                  size={22}
-                  color={starred ? colors.gold : 'rgba(255,255,255,0.60)'}
-                  fill={starred ? colors.gold : 'transparent'}
-                />
-              </Pressable>
+              <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                <Pressable
+                  onPress={() => {
+                    stop();
+                    dispatch(setTtsEnabled(!ttsEnabled));
+                  }}
+                  hitSlop={12}
+                  accessibilityLabel={ttsEnabled ? t('play.muteVoice') : t('play.unmuteVoice')}
+                  accessibilityRole="button"
+                >
+                  {ttsEnabled ? (
+                    <Volume2 size={22} color="rgba(255,255,255,0.80)" />
+                  ) : (
+                    <VolumeX size={22} color="rgba(255,255,255,0.40)" />
+                  )}
+                </Pressable>
+                <Pressable
+                  onPress={() => toggleFavorite(currentQuestion.id)}
+                  hitSlop={16}
+                  accessibilityLabel={starred ? 'Remove from favorites' : 'Add to favorites'}
+                  accessibilityRole="button"
+                >
+                  <Star
+                    size={22}
+                    color={starred ? colors.gold : 'rgba(255,255,255,0.60)'}
+                    fill={starred ? colors.gold : 'transparent'}
+                  />
+                </Pressable>
+              </View>
             </View>
             <Text style={styles.questionText}>{text}</Text>
             {currentQuestion.follow_up_question ? (
