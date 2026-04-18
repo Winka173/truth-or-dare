@@ -1,11 +1,15 @@
 import settingsReducer, {
+  settingsSlice,
   hydrate,
   setDefaultAgeGroup,
   setDefaultMood,
   setHapticEnabled,
   setLanguage,
+  setOnboardingComplete,
+  setPreferredVoiceId,
   setSoundEnabled,
   setTheme,
+  setTtsEnabled,
   type SettingsState,
 } from '@/store/slices/settingsSlice';
 
@@ -81,5 +85,50 @@ describe('settingsSlice — composability', () => {
       hapticEnabled: true,
       defaultMood: 'party',
     });
+  });
+});
+
+describe('new settings fields', () => {
+  it('initialises onboardingComplete to false', () => {
+    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    expect(state.onboardingComplete).toBe(false);
+  });
+
+  it('initialises ttsEnabled to true', () => {
+    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    expect(state.ttsEnabled).toBe(true);
+  });
+
+  it('initialises preferredVoiceId to null', () => {
+    const state = settingsSlice.reducer(undefined, { type: '@@INIT' });
+    expect(state.preferredVoiceId).toBeNull();
+  });
+
+  it('setOnboardingComplete sets the flag', () => {
+    const state = settingsSlice.reducer(undefined, setOnboardingComplete(true));
+    expect(state.onboardingComplete).toBe(true);
+  });
+
+  it('setTtsEnabled sets the flag', () => {
+    const state = settingsSlice.reducer(undefined, setTtsEnabled(false));
+    expect(state.ttsEnabled).toBe(false);
+  });
+
+  it('setPreferredVoiceId stores the id', () => {
+    const state = settingsSlice.reducer(
+      undefined,
+      setPreferredVoiceId('com.apple.voice.compact.en-US.Samantha'),
+    );
+    expect(state.preferredVoiceId).toBe('com.apple.voice.compact.en-US.Samantha');
+  });
+
+  it('hydrate merges new fields', () => {
+    const state = settingsSlice.reducer(
+      undefined,
+      hydrate({ onboardingComplete: true, ttsEnabled: false, preferredVoiceId: 'voice-1' }),
+    );
+    expect(state.onboardingComplete).toBe(true);
+    expect(state.ttsEnabled).toBe(false);
+    expect(state.preferredVoiceId).toBe('voice-1');
   });
 });

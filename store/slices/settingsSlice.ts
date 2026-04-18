@@ -1,3 +1,4 @@
+// store/slices/settingsSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { GAME_CONFIG } from '@/constants/config';
 import type { AgeGroup, LanguageCode, Mood } from '@/types/question';
@@ -11,6 +12,9 @@ export interface SettingsState {
   defaultMood: Mood;
   language: LanguageCode;
   theme: ThemePreference;
+  onboardingComplete: boolean;
+  ttsEnabled: boolean;
+  preferredVoiceId: string | null;
 }
 
 const initialState: SettingsState = {
@@ -20,13 +24,15 @@ const initialState: SettingsState = {
   defaultMood: GAME_CONFIG.DEFAULT_MOOD,
   language: GAME_CONFIG.DEFAULT_LANGUAGE,
   theme: 'system',
+  onboardingComplete: false,
+  ttsEnabled: true,
+  preferredVoiceId: null,
 };
 
 export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    /** Apply a partial settings object loaded from MMKV at app boot. */
     hydrate(state, action: PayloadAction<Partial<SettingsState>>) {
       Object.assign(state, action.payload);
     },
@@ -48,6 +54,15 @@ export const settingsSlice = createSlice({
     setTheme(state, action: PayloadAction<ThemePreference>) {
       state.theme = action.payload;
     },
+    setOnboardingComplete(state, action: PayloadAction<boolean>) {
+      state.onboardingComplete = action.payload;
+    },
+    setTtsEnabled(state, action: PayloadAction<boolean>) {
+      state.ttsEnabled = action.payload;
+    },
+    setPreferredVoiceId(state, action: PayloadAction<string | null>) {
+      state.preferredVoiceId = action.payload;
+    },
   },
 });
 
@@ -59,5 +74,8 @@ export const {
   setDefaultMood,
   setLanguage,
   setTheme,
+  setOnboardingComplete,
+  setTtsEnabled,
+  setPreferredVoiceId,
 } = settingsSlice.actions;
 export default settingsSlice.reducer;
