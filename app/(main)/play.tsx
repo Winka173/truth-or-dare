@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, BackHandler } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { MotiView } from 'moti';
+import { MotiView, AnimatePresence } from 'moti';
 import { Star } from 'lucide-react-native';
 import { GradientScreen } from '@/components/ui/GradientScreen';
 import { FrostedCard } from '@/components/ui/FrostedCard';
@@ -90,13 +90,16 @@ export default function PlayRoute() {
       </View>
 
       <View style={styles.center}>
-        <MotiView
-          from={{ opacity: 0, translateY: 60, scale: 0.9 }}
-          animate={{ opacity: 1, translateY: 0, scale: 1 }}
-          transition={{ type: 'spring', damping: 14, stiffness: 150 }}
-          style={{ width: '100%' }}
-        >
-          <FrostedCard style={styles.card}>
+        <AnimatePresence exitBeforeEnter>
+          <MotiView
+            key={currentQuestion.id}
+            from={{ opacity: 0, translateY: 60, scale: 0.9 }}
+            animate={{ opacity: 1, translateY: 0, scale: 1 }}
+            exit={{ opacity: 0, translateY: -80, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 14, stiffness: 150 }}
+            style={{ width: '100%' }}
+          >
+            <FrostedCard style={styles.card}>
             <CardShimmer />
             <View style={styles.cardHeader}>
               <MotiView
@@ -134,8 +137,9 @@ export default function PlayRoute() {
             {currentQuestion.follow_up_question ? (
               <Text style={styles.followUp}>{currentQuestion.follow_up_question}</Text>
             ) : null}
-          </FrostedCard>
-        </MotiView>
+            </FrostedCard>
+          </MotiView>
+        </AnimatePresence>
       </View>
 
       <View style={styles.bottom}>
