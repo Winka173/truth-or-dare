@@ -59,6 +59,14 @@ export default function AgeRoute() {
                     </View>
                     <Text style={styles.description}>{opt.description}</Text>
                     {opt.warning ? <Text style={styles.warning}>{opt.warning}</Text> : null}
+                    {selected ? (
+                      <MotiView
+                        from={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ type: 'timing', duration: 400 }}
+                        style={styles.progressFill}
+                      />
+                    ) : null}
                   </FrostedCard>
                 </Pressable>
               </MotiView>
@@ -83,4 +91,11 @@ const styles = StyleSheet.create({
   range: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.60)' },
   description: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.80)' },
   warning: { fontFamily: fonts.bodySemi, fontSize: 13, color: '#FBBF24', marginTop: 4 },
+  progressFill: {
+    position: 'absolute',
+    left: 0, right: 0, bottom: 0,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    transformOrigin: 'left',
+  },
 });
