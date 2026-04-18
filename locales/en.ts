@@ -104,6 +104,8 @@ export const en = {
   'play.bonus': 'Bonus prompt',
   'play.skipA11y': 'Skip this question',
   'play.doneA11y': 'Mark done',
+  'play.muteVoice': 'Mute',
+  'play.unmuteVoice': 'Unmute',
 
   // Results
   'results.title': 'Results',
@@ -141,6 +143,8 @@ export const en = {
   'settings.iapHint': 'Real IAP integration lands in a future update.',
   'settings.version': 'Truth or Dare v{app} · Questions v{db}',
   'settings.rtlRestart': 'Restart the app for right-to-left layout to take effect.',
+  'settings.voice': 'Reading Voice',
+  'settings.voiceDefault': 'System Default',
 
   // Packs
   'pack.premium': 'Premium',

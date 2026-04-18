@@ -47,6 +47,10 @@ const fr: Catalog = {
   'mood.intimate': 'Intime',
   'mood.chill': 'Cool',
   'mood.icebreaker': 'Brise-glace',
+  'settings.voice': 'Voix de lecture',
+  'settings.voiceDefault': 'Par défaut',
+  'play.muteVoice': 'Muet',
+  'play.unmuteVoice': 'Activer',
 };
 
 const de: Catalog = {
@@ -81,6 +85,10 @@ const de: Catalog = {
   'mood.intimate': 'Intim',
   'mood.chill': 'Entspannt',
   'mood.icebreaker': 'Eisbrecher',
+  'settings.voice': 'Lesestimme',
+  'settings.voiceDefault': 'Standard',
+  'play.muteVoice': 'Stumm',
+  'play.unmuteVoice': 'Ein',
 };
 
 const pt: Catalog = {
@@ -115,6 +123,10 @@ const pt: Catalog = {
   'mood.intimate': 'Íntimo',
   'mood.chill': 'Relax',
   'mood.icebreaker': 'Quebra-gelo',
+  'settings.voice': 'Voz de leitura',
+  'settings.voiceDefault': 'Padrão',
+  'play.muteVoice': 'Silenciar',
+  'play.unmuteVoice': 'Ativar',
 };
 
 const zh: Catalog = {
@@ -145,6 +157,10 @@ const zh: Catalog = {
   'categories.title': '分类',
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.voice': '朗读声音',
+  'settings.voiceDefault': '系统默认',
+  'play.muteVoice': '静音',
+  'play.unmuteVoice': '取消静音',
 };
 
 const ja: Catalog = {
@@ -175,6 +191,10 @@ const ja: Catalog = {
   'categories.title': 'カテゴリー',
   'settings.title': '設定',
   'settings.language': '言語',
+  'settings.voice': '読み上げ音声',
+  'settings.voiceDefault': 'システム標準',
+  'play.muteVoice': 'ミュート',
+  'play.unmuteVoice': '解除',
 };
 
 const ar: Catalog = {
@@ -205,6 +225,10 @@ const ar: Catalog = {
   'categories.title': 'الفئات',
   'settings.title': 'الإعدادات',
   'settings.language': 'اللغة',
+  'settings.voice': 'صوت القراءة',
+  'settings.voiceDefault': 'الافتراضي',
+  'play.muteVoice': 'كتم',
+  'play.unmuteVoice': 'تشغيل',
 };
 
 const hi: Catalog = {
@@ -228,6 +252,10 @@ const hi: Catalog = {
   'results.title': 'परिणाम',
   'settings.title': 'सेटिंग्स',
   'settings.language': 'भाषा',
+  'settings.voice': 'आवाज़',
+  'settings.voiceDefault': 'डिफ़ॉल्ट',
+  'play.muteVoice': 'म्यूट',
+  'play.unmuteVoice': 'चालू',
 };
 
 const id: Catalog = {
@@ -252,6 +280,10 @@ const id: Catalog = {
   'results.title': 'Hasil',
   'settings.title': 'Pengaturan',
   'settings.language': 'Bahasa',
+  'settings.voice': 'Suara',
+  'settings.voiceDefault': 'Default',
+  'play.muteVoice': 'Bisukan',
+  'play.unmuteVoice': 'Aktifkan',
 };
 
 const vi: Catalog = {
@@ -276,6 +308,10 @@ const vi: Catalog = {
   'results.title': 'Kết quả',
   'settings.title': 'Cài đặt',
   'settings.language': 'Ngôn ngữ',
+  'settings.voice': 'Giọng đọc',
+  'settings.voiceDefault': 'Mặc định',
+  'play.muteVoice': 'Tắt tiếng',
+  'play.unmuteVoice': 'Bật tiếng',
 };
 
 export const catalogs: Record<LanguageCode, Catalog> = {

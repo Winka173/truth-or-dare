@@ -88,6 +88,8 @@ export const es: Catalog = {
   'play.bonus': 'Pregunta bonus',
   'play.skipA11y': 'Saltar esta pregunta',
   'play.doneA11y': 'Marcar como hecho',
+  'play.muteVoice': 'Silenciar',
+  'play.unmuteVoice': 'Activar',
 
   'results.title': 'Resultados',
   'results.winner': '{name} gana',
@@ -122,6 +124,8 @@ export const es: Catalog = {
   'settings.iapHint': 'La integración real de IAP llegará en una actualización futura.',
   'settings.version': 'Verdad o Reto v{app} · Preguntas v{db}',
   'settings.rtlRestart': 'Reinicia la app para que el diseño de derecha a izquierda surta efecto.',
+  'settings.voice': 'Voz de lectura',
+  'settings.voiceDefault': 'Predeterminado',
 
   'pack.premium': 'Premium',
   'pack.oneTimePurchase': 'Compra única',
