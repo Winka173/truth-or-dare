@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, fontSize, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 
 interface Props {
   children: ReactNode;
@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.screen,
+    backgroundColor: '#0D0320',
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
@@ -53,21 +53,21 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: fonts.heading,
-    fontSize: fontSize['2xl'],
-    color: colors.text.primary,
+    fontSize: 24,
+    color: colors.textOnGradient,
     textAlign: 'center',
   },
   body: {
     fontFamily: fonts.body,
-    fontSize: fontSize.base,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: colors.textMutedOnGradient,
     textAlign: 'center',
     maxWidth: 320,
   },
   detail: {
-    fontFamily: fonts.mono,
-    fontSize: fontSize.xs,
-    color: colors.text.muted,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.textMutedOnGradient,
     textAlign: 'center',
     marginTop: spacing.lg,
   },

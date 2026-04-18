@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, fontSize, radius, shadow, spacing } from '@/constants/theme';
+import { colors, fonts, radius, spacing } from '@/constants/theme';
 
 type ToastVariant = 'info' | 'success' | 'error';
 
@@ -60,22 +60,28 @@ const styles = StyleSheet.create({
     bottom: spacing['2xl'],
     left: spacing.lg,
     right: spacing.lg,
-    backgroundColor: colors.bg.containerHighest,
+    backgroundColor: 'rgba(13,3,32,0.95)',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.lg,
-    ...shadow.elevated,
+    borderWidth: 1,
+    borderColor: colors.frostedBorder,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   success: {
-    backgroundColor: colors.tertiary.container,
+    backgroundColor: 'rgba(52,211,153,0.95)',
   },
   error: {
-    backgroundColor: colors.semantic.errorContainer,
+    backgroundColor: 'rgba(248,113,113,0.95)',
   },
   message: {
-    fontFamily: fonts.bodyMed,
-    fontSize: fontSize.base,
-    color: colors.text.primary,
+    fontFamily: fonts.bodySemi,
+    fontSize: 16,
+    color: colors.textOnGradient,
     textAlign: 'center',
   },
 });

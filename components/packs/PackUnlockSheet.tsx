@@ -1,7 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, fontSize, radius, spacing } from '@/constants/theme';
+import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { PACK_CONFIG } from '@/constants/config';
-import { Button } from '@/components/ui/Button';
+import { GradientButton } from '@/components/ui/GradientButton';
 import type { PackId } from '@/types/question';
 import type { IapStatus } from '@/types/game';
 
@@ -45,21 +45,17 @@ export function PackUnlockSheet({
                 </Text>
               ) : null}
               <View style={styles.actions}>
-                <Button
+                <GradientButton
                   label="Not now"
-                  variant="secondary"
-                  fullWidth
                   onPress={onClose}
                   accessibilityLabel="Cancel unlock"
                 />
-                <Button
+                <GradientButton
                   label={
                     iapStatus === 'loading'
                       ? 'Purchasing…'
                       : `Unlock for $${pack.price.toFixed(2)}`
                   }
-                  variant="primary"
-                  fullWidth
                   disabled={iapStatus === 'loading'}
                   onPress={onUnlock}
                   accessibilityLabel={`Unlock ${pack.label} for $${pack.price.toFixed(2)}`}
@@ -76,26 +72,28 @@ export function PackUnlockSheet({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay.backdrop,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.bg.containerHighest,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
+    backgroundColor: '#0D0320',
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     padding: spacing.xl,
     paddingBottom: spacing['2xl'],
     gap: spacing.md,
+    borderTopWidth: 1,
+    borderColor: colors.frostedBorder,
   },
   title: {
     fontFamily: fonts.heading,
-    fontSize: fontSize['2xl'],
-    color: colors.text.primary,
+    fontSize: 24,
+    color: colors.textOnGradient,
   },
   description: {
     fontFamily: fonts.body,
-    fontSize: fontSize.base,
-    color: colors.text.secondary,
+    fontSize: 16,
+    color: colors.textMutedOnGradient,
   },
   priceRow: {
     flexDirection: 'row',
@@ -104,19 +102,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   priceLabel: {
-    fontFamily: fonts.bodyMed,
-    fontSize: fontSize.sm,
-    color: colors.text.secondary,
+    fontFamily: fonts.bodySemi,
+    fontSize: 14,
+    color: colors.textMutedOnGradient,
   },
   price: {
     fontFamily: fonts.heading,
-    fontSize: fontSize['3xl'],
-    color: colors.primary.default,
+    fontSize: 30,
+    color: colors.gold,
   },
   errorMessage: {
     fontFamily: fonts.body,
-    fontSize: fontSize.sm,
-    color: colors.semantic.error,
+    fontSize: 14,
+    color: colors.error,
   },
   actions: {
     gap: spacing.sm,
