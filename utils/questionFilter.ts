@@ -17,6 +17,18 @@ export function isCategoryAccessible(
   return unlockedPacks.includes(cat.packId);
 }
 
+/**
+ * Builds the filtered question pool for a session.
+ *
+ * 18+ double gate: explicit content is only served when BOTH gates pass:
+ *   1. Age gate — `matchesAgeGroup()` only admits `age_group === '18plus'`
+ *      questions when `config.ageGroup === '18plus'` (see AGE_INCLUDES).
+ *   2. Pack gate — `isCategoryAccessible()` rejects premium categories
+ *      (e.g. the `adult_18` pack) unless their pack is in `unlockedPacks`.
+ *
+ * Removing either gate would leak 18+ content to younger ages or to users
+ * who haven't purchased the Adults Only pack.
+ */
 export function buildQuestionPool(
   allQuestions: readonly Question[],
   config: GameConfig,
