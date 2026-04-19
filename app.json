@@ -27,6 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
+      "allowBackup": true,
       "package": "com.winka.truthordare",
       "permissions": [
         "android.permission.RECORD_AUDIO",
