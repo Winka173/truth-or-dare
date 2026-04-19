@@ -17,7 +17,7 @@ import type { LanguageCode } from '@/types/question';
 export default function SettingsRoute() {
   const router = useRouter();
   const { settings, toggleSound, toggleHaptic } = useSettings();
-  const { devRestore } = usePacks();
+  const { restore } = usePacks();
   const { soundEnabled, hapticEnabled } = settings;
   const t = useT();
   const language = useAppSelector((s) => s.settings.language) as LanguageCode;
@@ -60,7 +60,7 @@ export default function SettingsRoute() {
         ) : null}
 
         <View style={styles.spacer} />
-        <TextButton label="Restore Purchases" onPress={() => devRestore([])} accessibilityLabel="Restore past purchases" />
+        <TextButton label="Restore Purchases" onPress={() => restore()} accessibilityLabel="Restore past purchases" />
         <Text style={styles.version}>v{APP_VERSION}</Text>
       </ScrollView>
       <VoicePickerSheet visible={voiceSheetOpen} onClose={() => setVoiceSheetOpen(false)} />
