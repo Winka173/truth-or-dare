@@ -10,11 +10,12 @@ import { GradientButton } from '@/components/ui/GradientButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { TextButton } from '@/components/ui/TextButton';
 import { CustomQuestionSheet } from '@/components/ui/CustomQuestionSheet';
+import { PackUnlockSheet } from '@/components/packs/PackUnlockSheet';
 import { useSetupWizard, wizardActions } from '@/hooks/useSetupWizard';
 import { useGame } from '@/hooks/useGame';
 import { usePacks } from '@/hooks/usePacks';
 import { CATEGORIES } from '@/constants/categories';
-import type { Mood } from '@/types/question';
+import type { Mood, PackId } from '@/types/question';
 import { fonts, spacing, radius } from '@/constants/theme';
 
 const MOODS: { value: Mood; label: string; emoji: string }[] = [
@@ -29,11 +30,13 @@ function CategoryChip({
   selected,
   locked,
   onToggle,
+  onOpenUnlock,
 }: {
   cat: (typeof CATEGORIES)[number];
   selected: boolean;
   locked: boolean;
   onToggle: () => void;
+  onOpenUnlock: (packId: Exclude<PackId, 'base'>) => void;
 }) {
   const shake = useSharedValue(0);
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
@@ -46,6 +49,7 @@ function CategoryChip({
         withTiming(-4, { duration: 50 }),
         withTiming(0, { duration: 50 }),
       );
+      if (cat.packId) onOpenUnlock(cat.packId as Exclude<PackId, 'base'>);
       return;
     }
     onToggle();
@@ -74,6 +78,7 @@ export default function VibeRoute() {
   const { start } = useGame();
   const { unlockedPackIds } = usePacks();
   const [customOpen, setCustomOpen] = useState(false);
+  const [packToUnlock, setPackToUnlock] = useState<Exclude<PackId, 'base'> | null>(null);
 
   function handleStart() {
     if (!ageGroup || !mood) return;
@@ -158,6 +163,7 @@ export default function VibeRoute() {
                   selected={selected}
                   locked={!!locked}
                   onToggle={() => wizardActions.toggleCategory(cat.id)}
+                  onOpenUnlock={setPackToUnlock}
                 />
               </MotiView>
             );
@@ -182,6 +188,12 @@ export default function VibeRoute() {
       </View>
 
       <CustomQuestionSheet visible={customOpen} onClose={() => setCustomOpen(false)} />
+
+      <PackUnlockSheet
+        visible={packToUnlock !== null}
+        packId={packToUnlock}
+        onClose={() => setPackToUnlock(null)}
+      />
     </GradientScreen>
   );
 }

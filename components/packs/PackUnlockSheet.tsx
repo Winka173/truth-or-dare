@@ -1,68 +1,45 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fonts, radius, spacing } from '@/constants/theme';
+// components/packs/PackUnlockSheet.tsx
+import { Text, Pressable, StyleSheet, Modal, ActivityIndicator } from 'react-native';
+import { usePacks } from '@/hooks/usePacks';
 import { PACK_CONFIG } from '@/constants/config';
 import { GradientButton } from '@/components/ui/GradientButton';
+import { TextButton } from '@/components/ui/TextButton';
+import { fonts, spacing, radius, colors } from '@/constants/theme';
 import type { PackId } from '@/types/question';
-import type { IapStatus } from '@/types/game';
 
-export interface PackUnlockSheetProps {
+interface Props {
   visible: boolean;
   packId: Exclude<PackId, 'base'> | null;
-  iapStatus: IapStatus;
-  onUnlock: () => void;
   onClose: () => void;
 }
 
-export function PackUnlockSheet({
-  visible,
-  packId,
-  iapStatus,
-  onUnlock,
-  onClose,
-}: PackUnlockSheetProps) {
-  const pack = packId ? PACK_CONFIG[packId] : null;
+export function PackUnlockSheet({ visible, packId, onClose }: Props) {
+  const { purchase, iapStatus } = usePacks();
+
+  if (!packId) return null;
+  const cfg = PACK_CONFIG[packId];
 
   return (
-    <Modal
-      visible={visible && !!pack}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-          {pack ? (
-            <>
-              <Text style={styles.title}>{pack.label}</Text>
-              <Text style={styles.description}>{pack.description}</Text>
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLabel}>One-time purchase</Text>
-                <Text style={styles.price}>${pack.price.toFixed(2)}</Text>
-              </View>
-              {iapStatus === 'error' ? (
-                <Text style={styles.errorMessage}>
-                  Purchase failed. Please try again.
-                </Text>
-              ) : null}
-              <View style={styles.actions}>
-                <GradientButton
-                  label="Not now"
-                  onPress={onClose}
-                  accessibilityLabel="Cancel unlock"
-                />
-                <GradientButton
-                  label={
-                    iapStatus === 'loading'
-                      ? 'Purchasing…'
-                      : `Unlock for $${pack.price.toFixed(2)}`
-                  }
-                  disabled={iapStatus === 'loading'}
-                  onPress={onUnlock}
-                  accessibilityLabel={`Unlock ${pack.label} for $${pack.price.toFixed(2)}`}
-                />
-              </View>
-            </>
+        <Pressable style={styles.sheet}>
+          <Text style={styles.title}>{cfg.label}</Text>
+          <Text style={styles.description}>{cfg.description}</Text>
+          <Text style={styles.price}>${cfg.price.toFixed(2)}</Text>
+
+          {iapStatus === 'loading' ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <GradientButton
+              label={`Unlock for $${cfg.price.toFixed(2)}`}
+              onPress={() => purchase(packId)}
+              accessibilityLabel={`Unlock ${cfg.label}`}
+            />
+          )}
+          {iapStatus === 'error' ? (
+            <Text style={styles.error}>Purchase failed. Please try again.</Text>
           ) : null}
+          <TextButton label="Close" onPress={onClose} accessibilityLabel="Close" />
         </Pressable>
       </Pressable>
     </Modal>
@@ -70,54 +47,17 @@ export function PackUnlockSheet({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.60)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#0D0320',
+    backgroundColor: '#1A1A2E',
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     padding: spacing.xl,
-    paddingBottom: spacing['2xl'],
     gap: spacing.md,
-    borderTopWidth: 1,
-    borderColor: colors.frostedBorder,
+    paddingBottom: spacing['2xl'],
   },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    color: colors.textOnGradient,
-  },
-  description: {
-    fontFamily: fonts.body,
-    fontSize: 16,
-    color: colors.textMutedOnGradient,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  priceLabel: {
-    fontFamily: fonts.bodySemi,
-    fontSize: 14,
-    color: colors.textMutedOnGradient,
-  },
-  price: {
-    fontFamily: fonts.heading,
-    fontSize: 30,
-    color: colors.gold,
-  },
-  errorMessage: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.error,
-  },
-  actions: {
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
+  title: { fontFamily: fonts.heading, fontSize: 26, color: '#FFFFFF', textAlign: 'center' },
+  description: { fontFamily: fonts.body, fontSize: 15, color: 'rgba(255,255,255,0.80)', textAlign: 'center' },
+  price: { fontFamily: fonts.heading, fontSize: 36, color: colors.gold, textAlign: 'center', marginVertical: spacing.sm },
+  error: { fontFamily: fonts.bodySemi, fontSize: 13, color: colors.error, textAlign: 'center' },
 });
