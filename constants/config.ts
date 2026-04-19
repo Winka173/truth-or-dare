@@ -83,3 +83,14 @@ export const SUPPORTED_LANGUAGES: readonly LanguageCode[] = [
 
 export const APP_VERSION = '0.1.0';
 export const QUESTION_DB_VERSION = '5.0.0';
+
+export const ADS_CONFIG = {
+  // Test IDs for development. Replace with production unit IDs before release.
+  interstitialAndroid: __DEV__
+    ? 'ca-app-pub-3940256099942544/1033173712'
+    : 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  interstitialIos: __DEV__
+    ? 'ca-app-pub-3940256099942544/4411468910'
+    : 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX',
+  cooldownMs: 3 * 60 * 1000,
+} as const;
