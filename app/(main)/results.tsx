@@ -10,6 +10,7 @@ import { GradientButton } from '@/components/ui/GradientButton';
 import { TextButton } from '@/components/ui/TextButton';
 import { useGame } from '@/hooks/useGame';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
+import { useAds } from '@/hooks/useAds';
 import { fonts, spacing, colors } from '@/constants/theme';
 import confetti from '@/assets/lottie/confetti.json';
 
@@ -24,6 +25,7 @@ export default function ResultsRoute() {
   const router = useRouter();
   const { session, reset, start } = useGame();
   const reduce = useReduceMotion();
+  const { showInterstitialIfReady } = useAds();
 
   useEffect(() => {
     if (!session) {
@@ -118,7 +120,7 @@ export default function ResultsRoute() {
         >
           <GradientButton label="Play Again" onPress={handlePlayAgain} accessibilityLabel="Play again with same setup" glow />
           <GradientButton label="Share Results 📤" onPress={handleShare} accessibilityLabel="Share results" />
-          <TextButton label="New Game" onPress={() => { reset(); router.replace('/(main)'); }} accessibilityLabel="Start a new game" />
+          <TextButton label="New Game" onPress={() => { showInterstitialIfReady(); reset(); router.replace('/(main)'); }} accessibilityLabel="Start a new game" />
         </MotiView>
       </ScrollView>
     </GradientScreen>
