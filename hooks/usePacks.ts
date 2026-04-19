@@ -1,8 +1,7 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import * as IAP from 'expo-in-app-purchases';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
-  unlock as unlockAction,
   restore as restoreAction,
   setIapStatus,
 } from '@/store/slices/packsSlice';
@@ -20,34 +19,6 @@ function productIdToPackId(productId: string): PackId | null {
 export function usePacks() {
   const dispatch = useAppDispatch();
   const { unlockedPackIds, iapStatus } = useAppSelector((s) => s.packs);
-
-  useEffect(() => {
-    IAP.connectAsync().catch(() => {
-      /* connection failure — restore handles it */
-    });
-
-    IAP.setPurchaseListener(({ responseCode, results }) => {
-      if (responseCode !== IAP.IAPResponseCode.OK || !results) {
-        dispatch(setIapStatus('error'));
-        return;
-      }
-      for (const purchase of results) {
-        if (purchase.acknowledged) continue;
-        const packId = productIdToPackId(purchase.productId);
-        if (packId) {
-          dispatch(unlockAction(packId));
-          const current = storageApi.loadUnlockedPacks();
-          storageApi.saveUnlockedPacks([...new Set([...current, packId])]);
-        }
-        IAP.finishTransactionAsync(purchase, false).catch(() => {});
-      }
-      dispatch(setIapStatus('success'));
-    });
-
-    return () => {
-      IAP.disconnectAsync().catch(() => {});
-    };
-  }, [dispatch]);
 
   const purchase = useCallback(
     async (packId: PackId) => {

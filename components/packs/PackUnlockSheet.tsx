@@ -1,4 +1,5 @@
 // components/packs/PackUnlockSheet.tsx
+import { useEffect } from 'react';
 import { Text, Pressable, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { usePacks } from '@/hooks/usePacks';
 import { PACK_CONFIG } from '@/constants/config';
@@ -15,6 +16,10 @@ interface Props {
 
 export function PackUnlockSheet({ visible, packId, onClose }: Props) {
   const { purchase, iapStatus } = usePacks();
+
+  useEffect(() => {
+    if (iapStatus === 'success') onClose();
+  }, [iapStatus, onClose]);
 
   if (!packId) return null;
   const cfg = PACK_CONFIG[packId];

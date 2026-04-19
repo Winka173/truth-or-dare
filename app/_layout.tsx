@@ -23,6 +23,7 @@ import { safeFlattenQuestions } from '@/utils/questionLoader';
 import { storageApi } from '@/utils/storage';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { ToastProvider } from '@/components/ui/Toast';
+import { useIapLifecycle } from '@/hooks/useIapLifecycle';
 import questionsData from '@/data/questions.json';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -61,6 +62,7 @@ export default function RootLayout() {
     Outfit_600SemiBold,
     Outfit_700Bold,
   });
+  useIapLifecycle();
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
